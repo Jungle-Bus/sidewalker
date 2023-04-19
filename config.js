@@ -11,6 +11,7 @@ var urlOsmTest = useTestServer
     ? 'https://master.apis.dev.openstreetmap.org'
     : 'https://www.openstreetmap.org';
 
+var redirectPath = window.location.origin + window.location.pathname;
 var auth = useTestServer
     ? osmAuth({
         url: urlOsmTest,
@@ -21,8 +22,9 @@ var auth = useTestServer
     })
     : osmAuth({
         url: urlOsmTest,
-        oauth_consumer_key: 'BUSD1oprdshegDYAS4CSnSxCDEtdtQbsnnRa1o3e',
-        oauth_secret: 'i69Zrt7lLkaRVuBzS5fT7VWIZrGobFQUAhFue4gh',
+        oauth_consumer_key: 'a9CFoAHkYhEZY5G42NjdqsHKXazAZoJ1jtVn0fBV',
+        oauth_secret: 'sTeC2rplH0RZtyQVl6t2Qtoy8bOU4EFbv8p8rP5x',
+        redirect_uri: redirectPath + "land.html",
         auto: true,
         //singlepage: true
     });
