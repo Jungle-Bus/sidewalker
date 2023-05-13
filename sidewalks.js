@@ -1,4 +1,4 @@
-﻿var map = L.map('map', { fadeAnimation: false });
+﻿var map = L.map('map', { preferCanvas: true, fadeAnimation: false }).setView([48.83926, 2.6493], 17);;
 var hash = new L.Hash(map);
 
 if (document.location.href.indexOf('#') == -1)
@@ -6,8 +6,8 @@ if (document.location.href.indexOf('#') == -1)
         map.setView([51.591, 24.609], 5);
 
 L.tileLayer.grayscale('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 18,
+    attribution: '<a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 20,
 }).addTo(map);
 
 L.control.locate({ drawCircle: false, drawMarker: true }).addTo(map);
@@ -21,32 +21,13 @@ L.Control.Link = L.Control.extend({
         var editors = document.createElement('span');
         editors.id = 'editors';
         //editors.style.display = 'none';
-        editors.innerHTML += '<a target="_blank" href="https://wiki.openstreetmap.org/wiki/Key:lanes:psv">Tagging</a>';
+        editors.innerHTML += '<a target="_blank" href="https://wiki.openstreetmap.org/wiki/FR:Cheminements_pi%C3%A9tons">Tagging</a>';
         editors.innerHTML += ' | ';
         editors.innerHTML += '<a id="id-bbox" target="_blank">iD</a>, ';
         editors.innerHTML += '<a id="josm-bbox" target="_blank">Josm</a>, ';
         div.appendChild(editors);
 
-        var editorActivation = document.createElement('span');
-        editorActivation.id = 'editorActive';
-
-        var editorCheckBox = document.createElement('input');
-        editorCheckBox.setAttribute('type', 'checkbox');
-        editorCheckBox.setAttribute('id', 'editorcb');
-        editorCheckBox.style.display = 'inline';
-        editorCheckBox.style.verticalAlign = 'top';
-        editorActivation.appendChild(editorCheckBox);
-
-
-        var label = document.createElement('label');
-        label.setAttribute('for', 'editorcb');
-        label.innerText = 'Editor';
-        label.style.display = 'inline';
-        editorActivation.appendChild(label);
-
-        div.appendChild(editorActivation);
-
-        div.innerHTML += ' | <a target="_blank" href="https://github.com/zetx16/bus-lanes">GitHub</a>';
+        div.innerHTML += ' | <a target="_blank" href="https://github.com/nlehuby/sidewalker">GitHub</a>';
 
         return div;
     }
@@ -73,7 +54,7 @@ new L.Control.Info({ position: 'topright' }).addTo(map);
 L.Control.Fast = L.Control.extend({
     onAdd: map => {
         var div = L.DomUtil.create('div', 'leaflet-control-layers control-padding control-bigfont control-button');
-        div.innerHTML = 'Download bbox';
+        div.innerHTML = ' ';
         div.id = 'fast';
         div.onclick = downloadHere;
         return div;
@@ -100,27 +81,88 @@ new L.Control.Save({ position: 'topright' }).addTo(map);
 
 //------------- LaneInfo control --------------------
 
-L.Control.LaneInfo = L.Control.extend({
+L.Control.EditWay = L.Control.extend({
     onAdd: map => {
         var div = L.DomUtil.create('div', 'leaflet-control-layers control-padding');
-        div.id = 'laneinfo';
+        div.id = 'edit_way';
         div.onclick = div.onpointerdown = div.onmousedown = div.ondblclick = L.DomEvent.stopPropagation;
         div.style.display = 'none';
         return div;
     }
 });
 
-new L.Control.LaneInfo({ position: 'topright' }).addTo(map);
+new L.Control.EditWay({ position: 'topright' }).addTo(map);
 
-//---------------------------------------------------
+//------------- Legend control --------------------
 
-var cutIcon = L.divIcon({
-    className: 'cut-icon',
-    iconSize: new L.Point(20, 20),
-    html: '✂'
+L.Control.Legend = L.Control.extend({
+    onAdd: map => {
+        var div = L.DomUtil.create('div', 'leaflet-control-layers control-padding');
+        div.id = 'legend';
+        div.onclick = div.onpointerdown = div.onmousedown = div.ondblclick = L.DomEvent.stopPropagation;
+        div.innerHTML=`
+        <details>
+        <summary>Légende</summary>
+        <div class="w3-container">
+          <ul class="w3-ul">
+            <li> <h1><span class="w3-left" style="color:LimeGreen;">___&nbsp;</span></h1>
+              <div>
+                <span class="w3-large">Cheminement dédié aux piétons </span><br>
+                <p>un trottoir, une rue piétonne, un escalier, etc (Cliquez dessus pour en savoir plus)</p>
+              </div>
+            </li>
+            <li>
+              <h1><span style="color:DodgerBlue;" class="w3-left">___&nbsp;</span></h1>
+              <div>
+                <span class="w3-large">Trottoir indiqué sur la rue</span><br>
+                <p>Cette méthode de cartographie est en général mal supportée par les calculateurs et rendus piétons. De
+                  plus, elle ne permet pas une parfaite description des intersections, notamment pour l'accessibilité.</p>
+              </div>
+            </li>
+            <li>
+              <h1><span style="color:CornflowerBlue;" class="w3-left">___&nbsp;</span></h1>
+              <div>
+                <span class="w3-large">Trottoir indiqué en surfacique</span><br>
+                <p>Cette méthode de cartographie fait des jolis rendus, mais n'est en général pas géré par les calculateurs
+                  d'itinéraire piétons.</p>
+              </div>
+            </li>
+          </ul>
+          <span id="editorActive"><input type="checkbox" id="editorcb" style="display: inline; vertical-align: top;"><label for="editorcb" style="display: inline;">Afficher aussi les rues</label></span>
+          <ul class="w3-ul">
+            <li>
+              <h1><span style="color:grey;" class="w3-left">___&nbsp;</span></h1>
+              <div>
+                <span class="w3-large">Rue avec trottoir séparé</span><br>
+                <p>Les trottoirs de cette rue sont cartographiés séparément (en vert sur la carte). C'est la meilleure
+                  manière de cartographier les trottoirs.</p>
+              </div>
+            </li>
+            <li>
+              <h1><span style="color:grey;" class="w3-left">___&nbsp;</span></h1>
+              <div>
+                <span class="w3-large">Rue sans trottoir</span><br>
+                <p>Cette rue ne permet pas la circulation des piétons.</p>
+              </div>
+            </li>
+            <li>
+              <h1><span style="color:black;" class="w3-left">___&nbsp;</span></h1>
+              <div>
+                <span class="w3-large">Rue sans indication de trottoir</span><br>
+                <p>Il est nécessaire de cartographier les trottoirs de cette rue ou d'indiquer qu'elle n'en possède pas.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </details>
+        `
+        return div;
+    }
 });
 
-//----------------------------------------------------
+new L.Control.Legend({ position: 'topright' }).addTo(map);
+
+//---------------------------------------------------
 
 var ways = {};
 var nodes = {};
@@ -139,17 +181,12 @@ var newWayId = -1;
 
 var change = {
     osmChange: {
-        $version: '0.6',
-        $generator: 'Bus lane ' + version,
+        $version: '0.1',
+        $generator: 'Sidewalker ' + version,
         modify: { way: [] },
         create: { way: [] }
     }
 };
-
-var datetime = new Date();/*
-document.getElementById('datetime-input').value =
-    datetime.getFullYear() + '-' + (datetime.getMonth() + 1) + '-' + datetime.getDate() + ' ' +
-    datetime.getHours() + ':' + datetime.getMinutes();*/
 
 var lastBounds;
 
@@ -158,7 +195,7 @@ var saving = false;
 
 var viewMinZoom = 14;
 
-var highwayRegex = new RegExp('^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service');
+var highwayRegex = new RegExp('^primary|secondary|tertiary|unclassified|residential|service|footway|pedestrian');
 
 
 // ------------- functions -------------------
@@ -235,7 +272,7 @@ function mapMoveEnd() {
         if (lane === 'right' || lane === 'left' || lane.startsWith('empty'))
             continue;
         var sideOffset
-        if (lane.startsWith('middle'))
+        if (lane.startsWith('middle') || lane.startsWith('separate') )
             sideOffset = 0
         else
             sideOffset = lanes[lane].options.offset > 0 ? 1 : -1;
@@ -261,16 +298,16 @@ function downloadHere() {
     lastBounds = map.getBounds();
     downloading(true);
     if (useTestServer)
-        getContent(urlOsmTest + getQueryBusLanes(), parseContent);
+        getContent(urlOsmTest + getQuerySidewalks(), parseContent);
     else
-        getContent(urlOverpass + encodeURIComponent(getQueryBusLanes()), parseContent);
+        getContent(urlOverpass + encodeURIComponent(getQuerySidewalks()), parseContent);
 }
 
 function downloading(downloading){
     if(downloading)
-        document.getElementById('fast').innerHTML = 'Downloading... ';
+        document.getElementById('fast').innerHTML = 'Téléchargement des données ... ';
     else
-        document.getElementById('fast').innerHTML = 'Download bbox';
+        document.getElementById('fast').innerHTML = '';
 }
 
 function withinLastBbox(){
@@ -325,65 +362,73 @@ function parseWay(way) {
     var emptyway = true;
 
     for (var side of ['right', 'left']) {
-        if (confirmSide(side, way.tag)) {
-            addLane(polyline, null, side, way, isMajor ? offsetMajor : offsetMinor, isMajor);
+        if (hasSidewalk(side, way.tag)) {
+            addLane(polyline, null, side, 'dodgerblue', way, isMajor ? offsetMajor : offsetMinor, isMajor);
             emptyway = false;
         }
     }
-    if (isDedicatedHighway(way.tag)) {
-        addLane(polyline, null, 'middle', way, isMajor ? offsetMajor : offsetMinor, isMajor);
+    if (isSurfacicSidewalk(way.tag)){
+        addLane(polyline, null, 'middle', 'cornflowerblue', way, isMajor ? offsetMajor : offsetMinor, isMajor);
         emptyway = false;
     }
+    else if (isDedicatedHighway(way.tag)) { 
+        addLane(polyline, null, 'middle', 'limegreen', way, isMajor ? offsetMajor : offsetMinor, isMajor);
+        emptyway = false;
+    }
+    if (editorMode && isSidewalkSeparate(way.tag)) {
+        addLane(polyline, null, 'separate','grey', way, isMajor ? offsetMajor : offsetMinor, isMajor);
+        emptyway = false;
+    }
+    if (editorMode && isNoSidewalk(way.tag)) {
+        addLane(polyline, null, 'separate','grey', way, isMajor ? offsetMajor : offsetMinor, isMajor);
+        emptyway = false;
+    }    
     if (editorMode && emptyway && way.tag.filter(x => x.$k == 'highway' && highwayRegex.test(x.$v)).length > 0)
-        addLane(polyline, null, 'empty', way, 0, isMajor);
+        addLane(polyline, null, 'empty', 'black', way, 0, isMajor);
 }
 
 function confirmSide(side, tags) {
-    return isPsvLane(side, tags) || isBusLane(side, tags);
+    return hasSidewalk(side, tags);
 }
 
-function isBusLane(side, tags) {
-    var buswayRegex = new RegExp('^busway:(?:both|' + side + ')$');
+function hasSidewalk(side, tags) {
 
     if (side == 'right' &&
-        tags.find(x => (x.$k == 'lanes:bus:forward' || x.$k == 'lanes:bus') ||
-            (buswayRegex.test(x.$k) && x.$v == 'lane') ||
-            (x.$k == 'busway' && x.$v == 'lane' && !tags.find(tg => tg.$k == 'oneway' && tg.$v == '-1'))))
+        tags.find(x => x.$k == 'sidewalk' && x.$v == 'right' ||x.$k == 'sidewalk' && x.$v == 'both' ))
         return true;
     else if (side == 'left' &&
-        tags.find(x => (x.$k == 'lanes:bus:backward' || (x.$k == 'lanes:bus' && /^[2-9]$/.test(x.$v))) ||
-            (buswayRegex.test(x.$k) && x.$v == 'lane') ||
-            (x.$k == 'busway' && x.$v == 'opposite_lane') ||
-            (x.$k == 'busway' && x.$v == 'lane' && !tags.find(tg => tg.$k == 'oneway' && tg.$v == 'yes'))))
+        tags.find(x => x.$k == 'sidewalk' && x.$v == 'left' ||x.$k == 'sidewalk' && x.$v == 'both' ))
         return true;
     return false;
 }
 
-function isPsvLane(side, tags) {
-    if (side == 'right' &&
-        tags.find(x => x.$k == 'lanes:psv:forward' || x.$k == 'lanes:psv'))
-        return true;
-    else if (side == 'left' &&
-        tags.find(x => x.$k == 'lanes:psv:backward' || (x.$k == 'lanes:psv' && /^[2-9]$/.test(x.$v))))
-        return true;
-    return false;
+function isSurfacicSidewalk(tags) {
+    return (tags.find(tg => tg.$k == 'area' && tg.$v == 'yes' ) && isFootway(tags))
 }
 
-function isBusRoad(tags) {
-    return (tags.find(tg => tg.$k == 'bus' && (tg.$v == 'yes' || tg.$v == 'designated')))
+function isFootway(tags) {
+    return (tags.find(tg => tg.$k == 'highway' && (tg.$v == 'footway' || tg.$v == 'pedestrian'  || tg.$v == 'steps')))
 }
-function isPsvRoad(tags) {
-    return (tags.find(tg => tg.$k == 'psv' && (tg.$v == 'yes' || tg.$v == 'designated')))
+function hasFoot(tags) {
+    return (tags.find(tg => tg.$k == 'foot' && (tg.$v == 'yes' || tg.$v == 'designated')))
+}
+
+function isSidewalkSeparate(tags) {
+    return (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'separate' ))
+}
+
+function isNoSidewalk(tags) {
+    return (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'no' ))
 }
 
 function isDedicatedHighway(tags) {
-    return isPsvRoad(tags) || isBusRoad(tags);
+    return hasFoot(tags) || isFootway(tags);
 }
 
 function wayIsMajor(tags){
     var findResult = tags.find(x => x.$k == 'highway');
     if (findResult) {
-        if (findResult.$v.search(/^motorway|trunk|primary|secondary|tertiary|unclassified|residential/) >= 0)
+        if (findResult.$v.search(/^footway|trunk|primary|secondary|tertiary|unclassified|residential/) >= 0)
             return true;
         else
             return false;
@@ -418,14 +463,8 @@ function getContent(url, callback){
     xhr.send();
 }
 
-function addLane(line, conditions, side, osm, offset, isMajor) {
+function addLane(line, conditions, side, color, osm, offset, isMajor) {
     var id = side + osm.$id;
-    var lanes_colors = {
-        'empty': 'black',
-        'left': 'dodgerblue',
-        'right': 'dodgerblue',
-        'middle': 'limegreen'
-    }
 
     var lanes_offsets = {
         'empty':-offset,
@@ -436,7 +475,7 @@ function addLane(line, conditions, side, osm, offset, isMajor) {
 
     lanes[id] = L.polyline(line,
         {
-            color: lanes_colors[side],
+            color: color,
             weight: isMajor ? weightMajor : weightMinor,
             offset: lanes_offsets[side],
             conditions: conditions,
@@ -449,13 +488,13 @@ function addLane(line, conditions, side, osm, offset, isMajor) {
 
 function showLaneInfo(e) {
     closeLaneInfo(e);
-    var laneinfo = document.getElementById('laneinfo');
+    var laneinfo = document.getElementById('edit_way');
     laneinfo.appendChild(getLaneInfoPanelContent(e.target.options.osm));
     laneinfo.style.display = 'block';
     map.originalEvent.preventDefault();
 }
 
-function getQueryBusLanes() {
+function getQuerySidewalks() {
     var bounds = map.getBounds();
     if (useTestServer) {
         var bbox = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()].join(',');
@@ -463,8 +502,8 @@ function getQueryBusLanes() {
     } else {
         var bbox = [bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast()].join(',');
         return editorMode
-            ? '[out:xml];(way[highway~"^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service"](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;'
-            : '[out:xml];(way["highway"][~"^(lanes:(psv|bus)|busway).*"~"."](' + bbox + ');way["highway"][~"access|motor_vehicle"~"no"][~"psv|bus"~"yes|designated"](' + bbox + ');)->.a;(.a;.a >;);out meta;';
+            ? '[out:xml];(way[highway~"^primary|secondary|tertiary|unclassified|residential|cycleway|service|footway|pedestrian|steps"](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;'
+            : '[out:xml];(way["highway"][sidewalk](' + bbox + ');way["highway"~"footway|pedestrian|steps|cycleway"](' + bbox + ');)->.a;(.a;.a >;);out meta;';
     }
 }
 
@@ -482,35 +521,7 @@ function getQueryOsmId(id) {
 function getLaneInfoPanelContent(osm) {
     setBacklight(osm);
 
-    var head = document.createElement('div');
-    head.setAttribute('style', 'min-width:250px');
-
-    var linkOsm = document.createElement('a');
-    linkOsm.setAttribute('target', '_blank');
-    linkOsm.setAttribute('href', 'https://openstreetmap.org/way/' + osm.$id);
-    linkOsm.innerText = 'View in OSM';
-    head.appendChild(linkOsm);
-
-    var editorBlock = document.createElement('span');
-    editorBlock.setAttribute('style', 'float:right');
-    editorBlock.innerText = 'Edit: ';
-
-    var linkJosm = document.createElement('a');
-    linkJosm.setAttribute('target', '_blank');
-    linkJosm.setAttribute('href', urlJosm + urlOverpass + getQueryOsmId(osm.$id));
-    linkJosm.innerText = 'Josm';
-    editorBlock.appendChild(linkJosm);
-    editorBlock.innerHTML += ', ';
-
-    var linkID = document.createElement('a');
-    linkID.setAttribute('target', '_blank');
-    linkID.setAttribute('href', urlID + '&way=' + osm.$id);
-    linkID.innerText = 'iD';
-    editorBlock.appendChild(linkID);
-
-    head.appendChild(editorBlock);
-
-    //if (true) {
+    /*
     if (editorMode) {
         var form = document.createElement("form");
         form.setAttribute('id', osm.$id);
@@ -547,48 +558,152 @@ function getLaneInfoPanelContent(osm) {
 
         return div;
     }
-    else {
+    else */{
         var onlyOneSide = false;
-        var getTagsBlockForViewer = function (tags, side, sideAlias) {
-            var regex = new RegExp('^lanes:(psv|bus)(?::' + sideAlias + ')?$');
-            var buswayRegex = new RegExp('^busway(?::(?:both|' + side + '))?$');
+        var ParseTagsFromHighway = function (tags) {
+            var check_if_sidewalk = false
+            
+            var highway_type = "Cheminement piéton"
+            if (tags.find(tg => tg.$k == 'highway' && tg.$v == 'steps')) {
+                highway_type = "Escalier"
+            } else if (isSurfacicSidewalk(tags) && tags.find(tg => tg.$k == 'highway' && tg.$v == 'pedestrian')) {
+                highway_type = "Place piétonne surfacique"
+            } else if (isSurfacicSidewalk(tags)) {
+                highway_type = "Trottoir surfacique"
+            } else if (tags.find(tg => tg.$k == 'highway' && tg.$v == 'pedestrian')) {
+                highway_type = "Rue piétonne"
+            } else if (tags.find(tg => tg.$k == 'highway' && tg.$v == 'footway') && tags.find(tg => tg.$k == 'footway' && tg.$v == 'sidewalk')) {
+                highway_type = "Trottoir"
+            } else if (tags.find(tg => tg.$k == 'highway' && tg.$v == 'footway') && tags.find(tg => tg.$k == 'footway' && tg.$v == 'crossing')) {
+                highway_type = "Passage piéton"
+            } else if (tags.find(tg => tg.$k == 'highway' && tg.$v == 'footway') && tags.find(tg => tg.$k == 'indoor' && tg.$v == 'yes')) {
+                highway_type = "Cheminement en intérieur"
+            } else if (tags.find(tg => tg.$k == 'highway' && tg.$v == 'footway')) {
+                highway_type = "Cheminement piéton"
+            } else if (tags.find(tg => tg.$k == 'foot' && tg.$v == 'yes') || tags.find(tg => tg.$k == 'foot' && tg.$v == 'designated')) {
+                highway_type = "Cheminement accessible aux piétons"
+            } else {
+                highway_type = "Rue"
+                check_if_sidewalk = true
+            }
+
+            const highway_properties = [];
+            if (tags.find(tg => tg.$k == 'name')) {
+                var tag = osm.tag.filter(tg => tg.$k == 'name');
+                highway_properties.push(`<b>${tag[0]['$v']}</b>`);
+            }
+            if (tags.find(tg => tg.$k == 'lit')) {
+                var tag = osm.tag.filter(tg => tg.$k == 'lit');
+                const lit_mapping = {
+                    "yes": "Est éclairé",
+                    "no": "N'est pas éclairé",
+                }
+                highway_properties.push(`${lit_mapping[tag[0]['$v']]}`);            
+            }
+            if (tags.find(tg => tg.$k == 'width')) {
+                var tag = osm.tag.filter(tg => tg.$k == 'width');
+                highway_properties.push(`Largeur : <i>${tag[0]['$v']}</i> m`);
+            } else if (tags.find(tg => tg.$k == 'est_width')) {
+                var tag = osm.tag.filter(tg => tg.$k == 'est_width');
+                highway_properties.push(`Largeur approx. : <i>${tag[0]['$v']}</i> m`);
+            }
+
+            if (tags.find(tg => tg.$k == 'surface')) {
+                var tag = osm.tag.filter(tg => tg.$k == 'surface');
+                highway_properties.push(`Revêtement : <i>${tag[0]['$v']}</i>`);
+            }
+            if (tags.find(tg => tg.$k == 'smoothness')) {
+                var tag = osm.tag.filter(tg => tg.$k == 'smoothness');
+                highway_properties.push(`Confort d'usage : <i>${tag[0]['$v']}</i>`);
+            }
+
+            if (tags.find(tg => tg.$k == 'incline')) {
+                var tag = osm.tag.filter(tg => tg.$k == 'incline');
+                if (tag[0]['$v'] == "up" || tag[0]['$v'] == "down" ) {
+                    highway_properties.push(`Cheminement en pente`);
+                } else {
+                    highway_properties.push(`Pente : <i>${tag[0]['$v']}</i> %`);
+                }  
+            }
+            if (tags.find(tg => tg.$k == 'incline:across')) {
+                var tag = osm.tag.filter(tg => tg.$k == 'incline:across');
+                highway_properties.push(`Pente latérale: <i>${tag[0]['$v']}</i> %`); 
+            }
+
+            if (tags.find(tg => tg.$k == 'step_count')) {
+                var tag = osm.tag.filter(tg => tg.$k == 'step_count');
+                highway_properties.push(`Nombre de marches : <i>${tag[0]['$v']}</i>`);
+            } else if (tags.find(tg => tg.$k == 'est_step_count')) {
+                var tag = osm.tag.filter(tg => tg.$k == 'est_step_count');
+                highway_properties.push(`Nombre approx. de marches : <i>${tag[0]['$v']}</i>`);
+            }
+            if (tags.find(tg => tg.$k == 'tactile_paving') || tags.find(tg => tg.$k == 'guide_strips') ) {
+                highway_properties.push(`Guidage podotactile disponible`);
+            }
+
+            //TODO :
+            // wheelchair
+            // all crossing tags
+            
+            let prop_as_text = ""
+            function display_properties(value, index, array) {
+                prop_as_text += `<li>${value}</li>`; 
+            }
+            highway_properties.forEach(display_properties);
+
+
+            var sidewalk_tag = "pas d'info sur les trottoirs de cette rue"
+            if (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'both')) {
+                var sidewalk_tag = "trottoir des deux côtés"
+            } else if (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'right')){
+                var sidewalk_tag = "trottoir d'un côté uniquement'"
+            }
 
             var tagsBlock = document.createElement('div');
 
-            if (isBusLane(side, tags) || isPsvLane(side, tags)) {
-                tagsBlock.id = side;
-                tagsBlock.innerHTML = tags
-                    .filter(tag => regex.test(tag.$k) ||
-                        (tag.$k == 'lanes:bus' && (side == 'left' ? /^[2-9]$/.test(tag.$v) : true)) ||
-                        (buswayRegex.test(tag.$k) && tag.$v == 'lane') ||
-                        (side == 'left' && tag.$k == 'busway' && tag.$v == 'opposite_lane'))
-                    .map(tag => tag.$k + ' = ' + tag.$v)
-                    .join('<br />');
-            }
-            if (isDedicatedHighway(tags)) {
-                onlyOneSide = true;
-                tagsBlock.id = 'middle';
-                tagsBlock.innerHTML = tags
-                    .filter(tag =>
-                        (tag.$k == 'bus' && (tag.$v == 'yes' || tag.$v == 'designated')) ||
-                        (tag.$k == 'psv' && (tag.$v == 'yes' || tag.$v == 'designated')) ||
-                        (tag.$k == 'motor_vehicle' && tag.$v == 'no') ||
-                        (tag.$k == 'access' && tag.$v == 'no'))
-                    .map(tag => tag.$k + ' = ' + tag.$v)
-                    .join('<br />');
-            }
+            tagsBlock.innerHTML=`
+            <div class="w3-light-grey">
+                <div class="w3-row-padding w3-content">
+                    <h4 class="w3-opacity"><b><span id="object_name_html">${highway_type}</span></b></h4>
+                    <div id="object_detail_html">
+                    <div class="w3-container w3-card w3-white w3-margin-bottom">
+                        <div class="w3-container">
+                        <h5 class="w3-opacity"><b>Propriétés</b></h5>
+                        <ul>
+                            ${check_if_sidewalk ? sidewalk_tag : prop_as_text}
+                        </ul>
+                        </div>
+                    </div>
+                    </div>
+                    <p></p>
+                    <div>
+                    <div class="w3-container w3-card w3-white w3-margin-bottom">
+                        <div class="w3-container">
+                        <h5 class="w3-opacity"><b>Modifier</b></h5>
+
+                        <div class="w3-bar">
+                            <a class="w3-bar-item" target="_blank" href="http://localhost:8111/load_object?objects=w${osm.$id}"><img src="images/logo/josm.png" class="w3-border" alt="JOSM icon"
+                                style="width:60px"> JOSM</a>
+                            <a class="w3-bar-item" target="_blank" href="https://www.openstreetmap.org/edit?editor=id&way=${osm.$id}"><img src="images/logo/iD.png" class="w3-border" alt="ID icon"
+                                style="width:60px">iD</a>
+                            <a class="w3-bar-item"><img src="images/logo/streetcomplete.svg" class="w3-border" alt="StreetComplete icon"
+                                style="width:60px">StreetComplete</a>
+                        </div>
+                        <p><i class="w3-margin-right">🔗</i><a href="https://openstreetmap.org/way/${osm.$id}" target="_blank">Voir
+                            sur OpenStreetMap</a></p>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                </div>
+            `
 
             return tagsBlock;
         }
 
         var div = document.createElement('div');
         div.id = 'infoContent';
-        div.appendChild(head);
-        div.appendChild(document.createElement('hr'));
-        div.appendChild(getTagsBlockForViewer(osm.tag, 'right', 'forward'));
-        if (!onlyOneSide) {
-            div.appendChild(getTagsBlockForViewer(osm.tag, 'left', 'backward'));
-        }
+        div.appendChild(ParseTagsFromHighway(osm.tag));
 
         return div;
     }
@@ -614,7 +729,16 @@ function setBacklight(osm) {
 
     var n = 3;
 
-    if (onlyOneSide){
+    lanes['middle'] = L.polyline(polyline,
+        {
+            color: 'fuchsia',
+            weight: offsetMajor * n - 4,
+            offset: 0,
+            opacity: 0.4
+        })
+        .addTo(map);
+
+    /*if (onlyOneSide){
         lanes['middle'] = L.polyline(polyline,
             {
                 color: 'limegreen',
@@ -642,93 +766,9 @@ function setBacklight(osm) {
                 opacity: 0.4
             })
             .addTo(map);
-    }
+    }*/
 }
 
-function getTagsBlock(side, osm) {
-    var div = document.createElement('div');
-    div.setAttribute('id', side);
-
-    if (side == "middle"){
-        var divLine = document.createElement('div');
-
-        var checkBoth = document.createElement('input');
-        checkBoth.style.display = 'inline';
-        checkBoth.setAttribute('type', 'checkbox');
-        checkBoth.setAttribute('name', 'psv');
-        checkBoth.setAttribute('id', 'psv');
-        checkBoth.checked = isPsvRoad( osm.tag);
-        checkBoth.onchange = addOrUpdate;
-        divLine.appendChild(checkBoth);
-
-        var label = document.createElement('label');
-        label.setAttribute('for', 'psv');
-        label.style.display = 'inline';
-        label.innerText = 'Public transport Dedicated Road';
-        divLine.appendChild(label);
-        div.appendChild(divLine);
-
-        var divLine = document.createElement('div');
-
-        var checkBoth = document.createElement('input');
-        checkBoth.style.display = 'inline';
-        checkBoth.setAttribute('type', 'checkbox');
-        checkBoth.setAttribute('name', 'bus');
-        checkBoth.setAttribute('id', 'bus');
-        checkBoth.checked = isBusRoad( osm.tag);
-        checkBoth.onchange = addOrUpdate;
-        divLine.appendChild(checkBoth);
-
-        var label = document.createElement('label');
-        label.setAttribute('for', 'bus');
-        label.style.display = 'inline';
-        label.innerText = 'Bus Dedicated Road';
-        divLine.appendChild(label);
-        div.appendChild(divLine);
-
-    } else {
-        var sideAlias = side == 'right' ? 'forward' : 'backward';
-        var hotKey = side == 'right' ? 'x' : 'z';
-
-        var divLine = document.createElement('div');
-
-        var checkBoth = document.createElement('input');
-        checkBoth.style.display = 'inline';
-        checkBoth.setAttribute('type', 'checkbox');
-        checkBoth.setAttribute('name', 'lanes:psv:' + sideAlias);
-        checkBoth.setAttribute('id', 'lanes:psv:' + sideAlias);
-        checkBoth.checked = isPsvLane(side, osm.tag);
-        checkBoth.onchange = addOrUpdate;
-        divLine.appendChild(checkBoth);
-
-        var label = document.createElement('label');
-        label.setAttribute('for', 'lanes:psv:' + sideAlias);
-        label.style.display = 'inline';
-        label.innerText = 'Public transport lane (' + hotKey + ')';
-        divLine.appendChild(label);
-        div.appendChild(divLine);
-
-        var divLine = document.createElement('div');
-
-        var checkBoth = document.createElement('input');
-        checkBoth.style.display = 'inline';
-        checkBoth.setAttribute('type', 'checkbox');
-        checkBoth.setAttribute('name', 'lanes:bus:' + sideAlias);
-        checkBoth.setAttribute('id', 'lanes:bus:' + sideAlias);
-        checkBoth.checked = isBusLane(side, osm.tag);
-        checkBoth.onchange = addOrUpdate;
-        divLine.appendChild(checkBoth);
-
-        var label = document.createElement('label');
-        label.setAttribute('for', 'lanes:bus:' + sideAlias);
-        label.style.display = 'inline';
-        label.innerText = 'Only bus lane';
-        divLine.appendChild(label);
-        div.appendChild(divLine);
-    }
-
-    return div;
-}
 
 function addOrUpdate() {
     var obj = formToOsmWay(this.form);
@@ -749,7 +789,7 @@ function addOrUpdate() {
         if (confirmSide(side, obj.tag)) {
             if (!lanes[id]) {
                 var isMajor = wayIsMajor(obj.tag);
-                addLane(polyline, null, side, obj, (isMajor ? offsetMajor : offsetMinor), isMajor);
+                addLane(polyline, null, side, 'dodgerblue', obj, (isMajor ? offsetMajor : offsetMinor), isMajor);
             }
             emptyway = false;
         } else if (lanes[id]) {
@@ -760,7 +800,7 @@ function addOrUpdate() {
     if (isDedicatedHighway(obj.tag)) {
         var id = 'middle' + obj.$id;
         if (!lanes[id]) {
-            addLane(polyline, null, 'middle', obj, isMajor ? offsetMajor : offsetMinor, isMajor);
+            addLane(polyline, null, 'middle', 'limegreen', obj, isMajor ? offsetMajor : offsetMinor, isMajor);
             emptyway = false;
         } else if (lanes[id]) {
             lanes[id].remove();
@@ -770,7 +810,7 @@ function addOrUpdate() {
     if (emptyway) {
         if (!lanes['empty' + obj.$id]) {
             var isMajor = wayIsMajor(obj.tag);
-            addLane(polyline, null, 'empty', obj, 0, isMajor);
+            addLane(polyline, null, 'empty', 'black', obj, 0, isMajor);
         }
     } else if (lanes['empty' + obj.$id]) {
         lanes['empty' + obj.$id].remove();
@@ -900,7 +940,7 @@ function createChangset() {
             changeset: {
                 tag: [
                     { $k: 'created_by', $v: editorName + ' ' + version },
-                    { $k: 'comment', $v: 'Bus lanes' }]
+                    { $k: 'comment', $v: 'Sidewalk modification' }]
             }
         }
     };
@@ -919,7 +959,7 @@ function createChangset() {
 }
 
 function closeLaneInfo(e) {
-    var laneinfo = document.getElementById('laneinfo');
+    var laneinfo = document.getElementById('edit_way');
     laneinfo.style.display = 'none';
     laneinfo.innerHTML = '';
 
