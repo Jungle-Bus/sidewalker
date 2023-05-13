@@ -114,7 +114,7 @@ L.Control.Legend = L.Control.extend({
             <li>
               <h1><span style="color:DodgerBlue;" class="w3-left">___&nbsp;</span></h1>
               <div>
-                <span class="w3-large">Trottoir indiqué sur la rue</span><br>
+                <span class="w3-large">Trottoir renseigné au niveau de la voirie</span><br>
                 <p>Cette méthode de cartographie est en général mal supportée par les calculateurs et rendus piétons. De
                   plus, elle ne permet pas une parfaite description des intersections, notamment pour l'accessibilité.</p>
               </div>
@@ -122,14 +122,14 @@ L.Control.Legend = L.Control.extend({
             <li>
               <h1><span style="color:CornflowerBlue;" class="w3-left">___&nbsp;</span></h1>
               <div>
-                <span class="w3-large">Trottoir indiqué en surfacique</span><br>
+                <span class="w3-large">Trottoir renseigné sous la forme d'une surface</span><br>
                 <p>Cette méthode de cartographie fait des jolis rendus, mais n'est en général pas géré par les calculateurs
                   d'itinéraire piétons.</p>
               </div>
             </li>
           </ul>
-          <span id="editorActive"><input type="checkbox" id="editorcb" style="display: inline; vertical-align: top;"><label for="editorcb" style="display: inline;">Afficher aussi les rues</label></span>
-          <ul class="w3-ul">
+          <span id="editorActive"><input type="checkbox" id="editorcb" style="display: inline; vertical-align: top;"><label for="editorcb" style="display: inline;"> Afficher aussi la voirie</label></span>
+          <ul class="w3-ul" id="legend_more">
             <li>
               <h1><span style="color:grey;" class="w3-left">___&nbsp;</span></h1>
               <div>
@@ -215,10 +215,13 @@ document.getElementById('editorcb').onchange = (chb) => {
         }
     };
 
-    if (chb.currentTarget.checked)
+    if (chb.currentTarget.checked) {
         auth.authenticate(checkAuth);
+        document.getElementById("legend_more").style.display = 'block';
+    }
     else {
         editorMode = false;
+        document.getElementById("legend_more").style.display = 'none';
         document.getElementById('editorActive').style.color = 'black';
         for (var lane in lanes)
             if (lane.startsWith('empty')) {
