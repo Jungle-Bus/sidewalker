@@ -1,5 +1,5 @@
-var editorName = 'BusLanes'
-var version = '0.2.0'
+var editorName = 'Sidewalker'
+var version = '0.0.1'
 
 var useTestServer = false;
 

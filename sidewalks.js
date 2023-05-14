@@ -41,6 +41,7 @@ L.Control.Info = L.Control.extend({
     onAdd: map => {
         var div = L.DomUtil.create('div', 'leaflet-control-layers control-padding control-bigfont control-button');
         div.innerHTML = 'Zoom in on the map';
+        div.style.background = 'yellow';
         div.id = 'info';
         div.onclick = () => map.setZoom(viewMinZoom);
         return div;
@@ -664,6 +665,19 @@ function getLaneInfoPanelContent(osm) {
 
             var tagsBlock = document.createElement('div');
 
+            var edit_buttons = `
+            <div class="w3-bar">
+                <button class="w3-button w3-black w3-border w3-round-large" onclick="set_sidewalk_tag(${osm.$id},'no')">Pas de trottoir ici</button>
+            </div>
+            <div class="w3-bar">
+                <button class="w3-button w3-green w3-border w3-round-large" onclick="set_sidewalk_tag(${osm.$id},'separate')">Trottoir déjà cartographié</button> (en vert sur la carte)
+            </div>
+            <h6>Éditeurs externes</h6>
+            `
+            if (!editorMode) {
+                var edit_buttons =''
+            }
+
             tagsBlock.innerHTML=`
             <div class="w3-light-grey">
                 <div class="w3-row-padding w3-content">
@@ -683,6 +697,7 @@ function getLaneInfoPanelContent(osm) {
                     <div class="w3-container w3-card w3-white w3-margin-bottom">
                         <div class="w3-container">
                         <h5 class="w3-opacity"><b>Modifier</b></h5>
+                        ${check_if_sidewalk ? edit_buttons : ""}
 
                         <div class="w3-bar">
                             <a class="w3-bar-item" target="_blank" href="http://localhost:8111/load_object?objects=w${osm.$id}"><img src="images/logo/josm.png" class="w3-border" alt="JOSM icon"
@@ -773,82 +788,61 @@ function setBacklight(osm) {
 }
 
 
-function addOrUpdate() {
-    var obj = formToOsmWay(this.form);
+function set_sidewalk_separate_tag(osm_id) {
+    var osm = ways[osm_id];
+    if (osm.tag.find(tg => tg.$k == 'sidewalk')){
+        osm.tag.find(tg => tg.$k == 'sidewalk').$v = "separate"
+    } else {
+        osm.tag.push({ $k: 'sidewalk', $v: 'separate' })
+    }
+    //TODO modifier le rendu et le texte
+    prepare_changeset(osm);
+    closeLaneInfo();
+}
+
+function set_sidewalk_tag(osm_id, sidewalk_value) {
+    
+    var osm = ways[osm_id];
+    //prepare data for OSM edit
+    if (osm.tag.find(tg => tg.$k == 'sidewalk')){
+        osm.tag.find(tg => tg.$k == 'sidewalk').$v = sidewalk_value
+    } else {
+        osm.tag.push({ $k: 'sidewalk', $v: sidewalk_value })
+    }
+
+    //find the already displayed lanes
     var polyline = [];
-    if (lanes['right' + obj.$id]){
-        polyline = lanes['right' + obj.$id].getLatLngs();
-    } else if (lanes['left' + obj.$id]) {
-        polyline = lanes['left' + obj.$id].getLatLngs();
-    } else if (lanes['middle' + obj.$id]){
-        polyline = lanes['middle' + obj.$id].getLatLngs();
-    } else {
-        polyline = lanes['empty' + obj.$id].getLatLngs();
-    };
-
-    var emptyway = true;
+    if (lanes['right' + osm_id]){
+        polyline = lanes['right' + osm_id].getLatLngs();
+      } else if (lanes['left' + osm_id]) {
+        polyline = lanes['left' + osm_id].getLatLngs();
+      } else if (lanes['middle' + osm_id]){
+        polyline = lanes['middle' + osm_id].getLatLngs();
+      } else {
+        polyline = lanes['empty' + osm_id].getLatLngs();
+      };
+    var isMajor = wayIsMajor(osm.tag);
+    //add new lane display
+    addLane(polyline, null, 'separate','grey', osm, isMajor ? offsetMajor : offsetMinor, isMajor);
+    //remove display ed lanes
+    if (lanes['empty' + osm_id]) {
+        lanes['empty' + osm_id].remove();
+        delete lanes['empty' + osm_id];
+    }
     for (var side of ['right', 'left']) {
-        var id = side == 'right' ? 'right' + obj.$id : 'left' + obj.$id;
-        if (confirmSide(side, obj.tag)) {
-            if (!lanes[id]) {
-                var isMajor = wayIsMajor(obj.tag);
-                addLane(polyline, null, side, 'dodgerblue', obj, (isMajor ? offsetMajor : offsetMinor), isMajor);
-            }
-            emptyway = false;
-        } else if (lanes[id]) {
+        var id = side == 'right' ? 'right' + osm_id : 'left' + osm_id;
+        if (lanes[id]) {
             lanes[id].remove();
             delete lanes[id];
         }
     }
-    if (isDedicatedHighway(obj.tag)) {
-        var id = 'middle' + obj.$id;
-        if (!lanes[id]) {
-            addLane(polyline, null, 'middle', 'limegreen', obj, isMajor ? offsetMajor : offsetMinor, isMajor);
-            emptyway = false;
-        } else if (lanes[id]) {
-            lanes[id].remove();
-            delete lanes[id];
-        }
-    }
-    if (emptyway) {
-        if (!lanes['empty' + obj.$id]) {
-            var isMajor = wayIsMajor(obj.tag);
-            addLane(polyline, null, 'empty', 'black', obj, 0, isMajor);
-        }
-    } else if (lanes['empty' + obj.$id]) {
-        lanes['empty' + obj.$id].remove();
-        delete lanes['empty' + obj.$id];
-    }
 
-    save({ target: this.form });
+    prepare_changeset(osm);
+    closeLaneInfo();
 }
 
-function formToOsmWay(form) {
-    var laneRegex = new RegExp('^(?:lanes:(?:psv|bus)|busway)');
-    var roadRegex = new RegExp('^(psv|bus)|access');
-    var osm = ways[form.id];
 
-    if (wayIsService(osm.tag)){
-        osm.tag = osm.tag.filter(tag => !roadRegex.test(tag.$k));
-        for (var input of form){
-            if (roadRegex.test(input.name) && input.checked) {
-                osm.tag.push({ $k: input.name, $v: 'yes' })
-                osm.tag.push({ $k: 'access', $v: 'no' })
-            }
-        }
-    } else {
-        osm.tag = osm.tag.filter(tag => !laneRegex.test(tag.$k));
-        for (var input of form){
-            if (laneRegex.test(input.name) && input.checked) {
-                osm.tag.push({ $k: input.name, $v: '1' })
-            }
-        }
-    }
-    return osm;
-}
-
-function save(form) {
-    var osm = formToOsmWay(form.target);
+function prepare_changeset(osm) {
 
     delete osm.$user;
     delete osm.$uid;
@@ -877,6 +871,7 @@ function save(form) {
     return false;
 }
 
+
 function removeFromOsmChangeset(id) {
     var form = document.getElementById(id);
     form.reset();
@@ -902,6 +897,7 @@ function saveChangesets(changesetId) {
         way.$changeset = changesetId;
 
     var path = '/api/0.6/changeset/' + changesetId + '/upload';
+    console.log(change)
     var text = JXON.jsToString(change);
 
     auth.xhr({
@@ -958,6 +954,9 @@ function createChangset() {
     }, function (err, details) {
         if (!err)
             saveChangesets(details);
+        else {
+            console.error(err)
+        }
     });
 }
 
@@ -979,25 +978,6 @@ function closeLaneInfo(e) {
             lanes['middle'].remove();
 }
 
-document.onkeydown = function (e) {
-    var hotChange = function (side) {
-        var psvCheckBox = document.getElementById('lanes:psv:' + side);
-        var busCheckBox = document.getElementById('lanes:bus:' + side);
-        if (psvCheckBox) {
-            psvCheckBox.checked = !psvCheckBox.checked;
-            busCheckBox.checked = false;
-            psvCheckBox.onchange();
-        }
-    };
-
-    if (e.keyCode == 90) {
-        hotChange('backward');
-        return false;
-    } else if (e.keyCode == 88) {
-        hotChange('forward');
-        return false;
-    }
-}
 
 map.on('moveend', mapMoveEnd);
 map.on('click', closeLaneInfo);
