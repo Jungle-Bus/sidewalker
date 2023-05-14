@@ -1,9 +1,7 @@
 ﻿var map = L.map('map', { preferCanvas: true, fadeAnimation: false }).setView([48.83926, 2.6493], 17);;
 var hash = new L.Hash(map);
 
-if (document.location.href.indexOf('#') == -1)
-    if (!setViewFromCookie())
-        map.setView([51.591, 24.609], 5);
+
 
 L.tileLayer.grayscale('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '<a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
@@ -236,7 +234,6 @@ function mapMoveEnd() {
     document.getElementById('josm-bbox').href = urlJosm + urlOverpass + getQueryHighways();
     document.getElementById('id-bbox').href = urlID + '#map=' +
         document.location.href.substring(document.location.href.indexOf('#') + 1);
-    setLocationCookie();
 
     var zoom = map.getZoom();
 
@@ -445,20 +442,6 @@ function wayIsService(tags){
     return false;
 }
 
-function setLocationCookie() {
-    var center = map.getCenter();
-    var date = new Date(new Date().getTime() + 10 * 365 * 24 * 60 * 60 * 1000);
-    document.cookie = 'location=' + map.getZoom() + '/' + center.lat + '/' + center.lng + '; expires=' + date;
-}
-
-function setViewFromCookie() {
-    var location = document.cookie.split('; ').find((e, i, a) => e.startsWith('location='));
-    if (location == undefined)
-        return false;
-    location = location.split('=')[1].split('/');
-    map.setView([location[1], location[2]], location[0]);
-    return true;
-}  
 
 function getContent(url, callback){
     var xhr = new XMLHttpRequest();
