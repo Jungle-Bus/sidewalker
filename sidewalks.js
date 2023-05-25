@@ -25,7 +25,7 @@ L.Control.Link = L.Control.extend({
         editors.innerHTML += '<a id="josm-bbox" target="_blank">Josm</a>, ';
         div.appendChild(editors);
 
-        div.innerHTML += ' | <a target="_blank" href="https://github.com/nlehuby/sidewalker">GitHub</a>';
+        div.innerHTML += ' | <a target="_blank" href="https://github.com/nlehuby/sidewalker">Code source</a>';
 
         return div;
     }
@@ -119,7 +119,7 @@ L.Control.Legend = L.Control.extend({
               </div>
             </li>
             <li>
-              <h1><span style="color:CornflowerBlue;" class="w3-left">___&nbsp;</span></h1>
+              <h1><span style="color:DarkGoldenRod;" class="w3-left">___&nbsp;</span></h1>
               <div>
                 <span class="w3-large">Trottoir renseigné sous la forme d'une surface</span><br>
                 <p>Cette méthode de cartographie fait des jolis rendus, mais n'est en général pas géré par les calculateurs
@@ -369,7 +369,7 @@ function parseWay(way) {
         }
     }
     if (isSurfacicSidewalk(way.tag)){
-        addLane(polyline, null, 'middle', 'cornflowerblue', way, isMajor ? offsetMajor : offsetMinor, isMajor);
+        addLane(polyline, null, 'middle', 'darkgoldenrod', way, isMajor ? offsetMajor : offsetMinor, isMajor);
         emptyway = false;
     }
     else if (isDedicatedHighway(way.tag)) { 
@@ -848,7 +848,7 @@ function prepare_changeset(osm) {
     }
 
     changesCount = change.osmChange.modify.way.length + change.osmChange.create.way.length;
-    document.getElementById('saveChangeset').innerText = 'Save (' + changesCount + ')';
+    document.getElementById('saveChangeset').innerText = 'Envoyer sur OSM (' + changesCount + ' modifs.)';
     document.getElementById('saveChangeset').style.display = 'block';
 
     return false;
