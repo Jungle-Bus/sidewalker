@@ -108,6 +108,7 @@ function checkOSMAuth() {
     }
 }
 
+addHighwayCheckBox()
 document.getElementById('editorcb').onchange = (chb) => {
 
     var checkAuth = function (err) {
@@ -611,6 +612,18 @@ function getLaneInfoPanelContent(osm) {
 
         return div;
     }
+}
+
+function addHighwayCheckBox(){
+    var div = document.createElement('div');
+    div.innerHTML = `
+    <label class="toggle">
+                    <input class="toggle-checkbox" type="checkbox" id="editorcb">
+                    <div class="toggle-switch"></div>
+                    <span id="editorActive" class="toggle-label">Afficher aussi la voirie</span>
+                </label>`
+    var parent = document.getElementById("home");
+    parent.appendChild(div)
 }
 
 function setBacklight(osm) {
