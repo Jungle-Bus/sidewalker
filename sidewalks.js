@@ -127,7 +127,11 @@ L.Control.Legend = L.Control.extend({
               </div>
             </li>
           </ul>
-          <span id="editorActive"><input type="checkbox" id="editorcb" style="display: inline; vertical-align: top;"><label for="editorcb" style="display: inline;"> Afficher aussi la voirie</label></span>
+          <label class="toggle">
+            <input class="toggle-checkbox" type="checkbox" id="editorcb">
+            <div class="toggle-switch"></div>
+            <span id="editorActive" class="toggle-label">Afficher aussi la voirie</span>
+          </label>
           <ul class="w3-ul" id="legend_more">
             <li>
               <h1><span style="color:grey;" class="w3-left">___&nbsp;</span></h1>
