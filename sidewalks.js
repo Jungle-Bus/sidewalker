@@ -11,29 +11,6 @@ L.tileLayer.grayscale('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 L.control.zoom({ position: "topright" }).addTo(map);
 L.control.locate({ drawCircle: false, drawMarker: true, position: "topright" }).addTo(map);
 
-//------------- GitHub control ------------------
-
-L.Control.Link = L.Control.extend({
-    onAdd: map => {
-        var div = L.DomUtil.create('div', 'leaflet-control-layers control-padding control-bigfont');
-
-        var editors = document.createElement('span');
-        editors.id = 'editors';
-        //editors.style.display = 'none';
-        editors.innerHTML += '<a target="_blank" href="https://wiki.openstreetmap.org/wiki/FR:Cheminements_pi%C3%A9tons">Tagging</a>';
-        editors.innerHTML += ' | ';
-        editors.innerHTML += '<a id="id-bbox" target="_blank">iD</a>, ';
-        editors.innerHTML += '<a id="josm-bbox" target="_blank">Josm</a>, ';
-        div.appendChild(editors);
-
-        div.innerHTML += ' | <a target="_blank" href="https://github.com/nlehuby/sidewalker">Code source</a>';
-
-        return div;
-    }
-});
-
-new L.Control.Link({ position: 'bottomright' }).addTo(map);
-
 //------------- Info control --------------------
 
 L.Control.Info = L.Control.extend({
@@ -153,10 +130,6 @@ document.getElementById('editorcb').onchange = (chb) => {
 };
 
 function mapMoveEnd() {
-    document.getElementById('josm-bbox').href = urlJosm + urlOverpass + getQueryHighways();
-    document.getElementById('id-bbox').href = urlID + '#map=' +
-        document.location.href.substring(document.location.href.indexOf('#') + 1);
-
     var zoom = map.getZoom();
 
     if (zoom <= 12) {
@@ -420,13 +393,6 @@ function getQuerySidewalks() {
     }
 }
 
-function getQueryHighways() {
-    var bounds = map.getBounds();
-    var bbox = [bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast()].join(',');
-    var tag = 'highway~"^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service"';
-    return '[out:xml];(way[' + tag + '](' + bbox + ');>;way[' + tag + '](' + bbox + ');<;);out meta;';
-}
-
 function getQueryOsmId(id) {
     return '[out:xml];(way(id:' + id + ');>;way(id:' + id + ');<;);out meta;';
 }
@@ -588,10 +554,9 @@ function getLaneInfoPanelContent(osm) {
             }
 
             tagsBlock.innerHTML = `
-            <div class="w3-light-grey">
-                <div class="w3-row-padding w3-content">
-                    <h4 class="w3-opacity"><b><span id="object_name_html">${highway_type}</span></b></h4>
-                    <div id="object_detail_html">
+            <div>
+                <div class="w3-content">
+                    <h4 class="w3-opacity"><b><span id="object_name_html">${highway_type}</span></b></h4>              
                     <div class="w3-container w3-card w3-white w3-margin-bottom">
                         <div class="w3-container">
                         <h5 class="w3-opacity"><b>Propriétés</b></h5>
@@ -599,7 +564,6 @@ function getLaneInfoPanelContent(osm) {
                             ${check_if_sidewalk ? sidewalk_tag : prop_as_text}
                         </ul>
                         </div>
-                    </div>
                     </div>
                     <p></p>
                     <div>
