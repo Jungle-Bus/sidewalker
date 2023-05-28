@@ -613,7 +613,7 @@ function getLaneInfoPanelContent(osm) {
                                 style="width:60px"> JOSM</a>
                             <a class="w3-bar-item" target="_blank" href="https://www.openstreetmap.org/edit?editor=id&way=${osm.$id}"><img src="images/logo/iD.png" class="w3-border" alt="ID icon"
                                 style="width:60px">iD</a>
-                            <a class="w3-bar-item" target="_blank" href="https://nlehuby.github.io/sidewalker/streetcomplete"><img src="images/logo/streetcomplete.svg" class="w3-border" alt="StreetComplete icon"
+                            <a class="w3-bar-item" onclick="sidebar.open('mobileEdit')" style="text-decoration: underline;"><img src="images/logo/streetcomplete.svg" class="w3-border" alt="StreetComplete icon"
                                 style="width:60px">StreetComplete</a>
                         </div>
                         <p><i class="w3-margin-right">🔗</i><a href="https://openstreetmap.org/way/${osm.$id}" target="_blank">Voir
