@@ -98,18 +98,30 @@ var highwayRegex = new RegExp('^primary|secondary|tertiary|unclassified|resident
 
 // ------------- functions -------------------
 
+function checkOSMAuth() {
+    if (auth.authenticated()){
+        document.getElementById("panel_no_auth").style.display = 'none';
+        document.getElementById("panel_auth_ok").style.display = 'block';
+    } else {
+        document.getElementById("panel_no_auth").style.display = 'block';
+        document.getElementById("panel_auth_ok").style.display = 'none';
+    }
+}
+
 document.getElementById('editorcb').onchange = (chb) => {
 
     var checkAuth = function (err) {
         if (err) {
             document.getElementById('editorActive').style.color = 'red';
             auth.authenticate(checkAuth);
+            checkOSMAuth()
         }
         else {
             editorMode = true;
             document.getElementById('editorActive').style.color = 'green';
             lastBounds = undefined;
             mapMoveEnd();
+            checkOSMAuth()
         }
     };
 
@@ -127,6 +139,7 @@ document.getElementById('editorcb').onchange = (chb) => {
                 delete lanes[lane];
             }
     }
+    
 };
 
 function mapMoveEnd() {
@@ -854,7 +867,9 @@ function closeLaneInfo(e) {
         lanes['middle'].remove();
 }
 
+//---------------------------------------------------
 
+checkOSMAuth()
 map.on('moveend', mapMoveEnd);
 map.on('click', closeLaneInfo);
 mapMoveEnd();

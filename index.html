@@ -38,7 +38,7 @@
             </ul>
 
             <ul role="tablist">
-                <li><a href="#settings" role="tab"><i class="fa fa-user"></i></a></li>
+                <li><a href="#OSMProfile" role="tab"><i class="fa fa-user"></i></a></li>
             </ul>
         </div>
 
@@ -177,9 +177,26 @@
                 <p class="w3-small">Ce site est un logiciel libre, vous pouvez <a href="https://github.com/nlehuby/sidewalker" target="_blank">voir le code source et contribuer à son développement sur github.</a></p>
             </div>
 
-            <div class="sidebar-pane" id="settings">
-                <h1 class="sidebar-header">Settings<span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+            <div class="sidebar-pane" id="OSMProfile">
+                <h1 class="sidebar-header">Compte OSM<span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
                 </h1>
+
+                <p>Ce site permet d'effectuer quelques modifications simples sur les rues dans OpenStreetMap :
+                    <ul>
+                        <li>Indiquer qu'une rue n'a aucun trottoir</li>
+                        <li>Indiquer que les trottoir d'une rue sont déjà cartographiés (afin d'éviter les doublons)</li>
+                    </ul>
+
+                    Pour effectuer ces modifications, il est nécessaire d'être connecté à OpenStreetMap, et d'afficher toute la voirie 
+                    (en cochant la case dans <a href="#" onclick="sidebar.open('home')">légende</a>).
+                </p>
+                <p class="w3-panel w3-pale-green" id="panel_auth_ok">
+                    Vous êtes connecté(e) à OSM. <a href="#" onclick="auth.logout();checkOSMAuth()">Se déconnecter</a>
+                </p>
+                <p class="w3-panel w3-pale-red" id="panel_no_auth">
+                    Vous n'êtes pas encore connecté(e) à OSM. <a href="#" onclick="auth.authenticate(checkOSMAuth)">Se connecter</a>
+                </p>                
+
             </div>
         </div>
     </div>
