@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.62.0/dist/L.Control.Locate.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/leaflet-sidebar_v2-0.4.0/leaflet-sidebar.min.css" />
+    <link rel="stylesheet" href="index.css" />
     <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
     <script src="https://cdn.rawgit.com/Zverik/leaflet-grayscale/master/TileLayer.Grayscale.js"></script>
     <script src="https://cdn.rawgit.com/bbecquet/Leaflet.PolylineOffset/master/leaflet.polylineoffset.js"></script>
@@ -18,12 +20,114 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.62.0/src/L.Control.Locate.min.js"></script>
     <script src="https://cdn.rawgit.com/tyrasd/jxon/master/jxon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/osm-auth@1.1.2/osmauth.js"></script>
-    <link rel="stylesheet" href="index.css" />
+    <script src="assets/leaflet-sidebar_v2-0.4.0/leaflet-sidebar.min.js"></script>
+
 
 </head>
 
 <body>
     <div id="map"></div>
+    <div id="sidebar" class="sidebar collapsed">
+        <!-- Nav tabs -->
+        <div class="sidebar-tabs">
+            <ul role="tablist">
+                <li><a href="#profile" role="tab"></a></li>
+                <li><a href="#home" role="tab"><i class="fa fa-info"></i></a></li>
+                <li><a href="#messages" role="tab"><i class="fa fa-question"></i></a></li>
+            </ul>
+
+            <ul role="tablist">
+                <li><a href="#settings" role="tab"><i class="fa fa-user"></i></a></li>
+            </ul>
+        </div>
+
+        <!-- Tab panes -->
+        <div class="sidebar-content">
+            <div class="sidebar-pane" id="home">
+                <h1 class="sidebar-header">
+                    Légende
+                    <span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+                </h1>
+
+
+                <ul class="w3-ul w3-small">
+                    <li>
+                        <h1><span class="w3-left" style="color:LimeGreen;">___&nbsp;</span></h1>
+                        <div>
+                            <span class="w3-large">Cheminement dédié aux piétons </span><br>
+                            <p>un trottoir, une rue piétonne, un escalier, etc (Cliquez dessus pour en savoir plus)</p>
+                        </div>
+                    </li>
+                    <li>
+                        <h1><span style="color:DodgerBlue;" class="w3-left">___&nbsp;</span></h1>
+                        <div>
+                            <span class="w3-large">Trottoir renseigné au niveau de la voirie</span><br>
+                            <p>Cette méthode de cartographie est en général mal supportée par les calculateurs et rendus
+                                piétons. De
+                                plus, elle ne permet pas une parfaite description des intersections, notamment pour
+                                l'accessibilité.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <h1><span style="color:DarkGoldenRod;" class="w3-left">___&nbsp;</span></h1>
+                        <div>
+                            <span class="w3-large">Trottoir renseigné sous la forme d'une surface</span><br>
+                            <p>Cette méthode de cartographie fait des jolis rendus, mais n'est en général pas gérée par
+                                les calculateurs
+                                d'itinéraire piétons.</p>
+                        </div>
+                    </li>
+                </ul>
+                <label class="toggle">
+                    <input class="toggle-checkbox" type="checkbox" id="editorcb">
+                    <div class="toggle-switch"></div>
+                    <span id="editorActive" class="toggle-label">Afficher aussi la voirie</span>
+                </label>
+                <ul class="w3-ul w3-small" id="legend_more">
+                    <li>
+                        <h1><span style="color:grey;" class="w3-left">___&nbsp;</span></h1>
+                        <div>
+                            <span class="w3-large">Rue avec trottoir séparé</span><br>
+                            <p>Les trottoirs de cette rue sont cartographiés séparément (en vert sur la carte). C'est la
+                                meilleure
+                                manière de cartographier les trottoirs.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <h1><span style="color:grey;" class="w3-left">___&nbsp;</span></h1>
+                        <div>
+                            <span class="w3-large">Rue sans trottoir</span><br>
+                            <p>Cette rue ne permet pas la circulation des piétons.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <h1><span style="color:black;" class="w3-left">___&nbsp;</span></h1>
+                        <div>
+                            <span class="w3-large">Rue sans indication de trottoir</span><br>
+                            <p>Il est nécessaire de cartographier les trottoirs de cette rue ou d'indiquer qu'elle n'en
+                                possède pas.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-pane" id="profile">
+                <h1 class="sidebar-header">Détails<span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+                </h1>
+                Cliquez sur un cheminement sur la carte pour voir les informations déjà renseignées dans OpenStreetMap.
+            </div>
+
+            <div class="sidebar-pane" id="messages">
+                <h1 class="sidebar-header">Messages<span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+                </h1>
+            </div>
+
+            <div class="sidebar-pane" id="settings">
+                <h1 class="sidebar-header">Settings<span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+                </h1>
+            </div>
+        </div>
+    </div>
 
     <script src="config.js"></script>
     <script src="sidewalks.js"></script>
