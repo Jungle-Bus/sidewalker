@@ -8,31 +8,8 @@ L.tileLayer.grayscale('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 20,
 }).addTo(map);
 
-L.control.zoom({position: "topright" }).addTo(map);
+L.control.zoom({ position: "topright" }).addTo(map);
 L.control.locate({ drawCircle: false, drawMarker: true, position: "topright" }).addTo(map);
-
-//------------- GitHub control ------------------
-
-L.Control.Link = L.Control.extend({
-    onAdd: map => {
-        var div = L.DomUtil.create('div', 'leaflet-control-layers control-padding control-bigfont');
-
-        var editors = document.createElement('span');
-        editors.id = 'editors';
-        //editors.style.display = 'none';
-        editors.innerHTML += '<a target="_blank" href="https://wiki.openstreetmap.org/wiki/FR:Cheminements_pi%C3%A9tons">Tagging</a>';
-        editors.innerHTML += ' | ';
-        editors.innerHTML += '<a id="id-bbox" target="_blank">iD</a>, ';
-        editors.innerHTML += '<a id="josm-bbox" target="_blank">Josm</a>, ';
-        div.appendChild(editors);
-
-        div.innerHTML += ' | <a target="_blank" href="https://github.com/nlehuby/sidewalker">Code source</a>';
-
-        return div;
-    }
-});
-
-new L.Control.Link({ position: 'bottomright' }).addTo(map);
 
 //------------- Info control --------------------
 
@@ -79,92 +56,9 @@ L.Control.Save = L.Control.extend({
 
 new L.Control.Save({ position: 'topright' }).addTo(map);
 
-//------------- LaneInfo control --------------------
+//------------- Sidebar --------------------
 
-L.Control.EditWay = L.Control.extend({
-    onAdd: map => {
-        var div = L.DomUtil.create('div', 'leaflet-control-layers control-padding');
-        div.id = 'edit_way';
-        div.onclick = div.onpointerdown = div.onmousedown = div.ondblclick = L.DomEvent.stopPropagation;
-        div.style.display = 'none';
-        return div;
-    }
-});
-
-new L.Control.EditWay({ position: 'topleft' }).addTo(map);
-
-//------------- Legend control --------------------
-
-L.Control.Legend = L.Control.extend({
-    onAdd: map => {
-        var div = L.DomUtil.create('div', 'leaflet-control-layers control-padding');
-        div.id = 'legend';
-        div.onclick = div.onpointerdown = div.onmousedown = div.ondblclick = L.DomEvent.stopPropagation;
-        div.innerHTML=`
-        <details>
-        <summary>Légende</summary>
-        <div class="w3-container">
-          <ul class="w3-ul">
-            <li> <h1><span class="w3-left" style="color:LimeGreen;">___&nbsp;</span></h1>
-              <div>
-                <span class="w3-large">Cheminement dédié aux piétons </span><br>
-                <p>un trottoir, une rue piétonne, un escalier, etc (Cliquez dessus pour en savoir plus)</p>
-              </div>
-            </li>
-            <li>
-              <h1><span style="color:DodgerBlue;" class="w3-left">___&nbsp;</span></h1>
-              <div>
-                <span class="w3-large">Trottoir renseigné au niveau de la voirie</span><br>
-                <p>Cette méthode de cartographie est en général mal supportée par les calculateurs et rendus piétons. De
-                  plus, elle ne permet pas une parfaite description des intersections, notamment pour l'accessibilité.</p>
-              </div>
-            </li>
-            <li>
-              <h1><span style="color:DarkGoldenRod;" class="w3-left">___&nbsp;</span></h1>
-              <div>
-                <span class="w3-large">Trottoir renseigné sous la forme d'une surface</span><br>
-                <p>Cette méthode de cartographie fait des jolis rendus, mais n'est en général pas géré par les calculateurs
-                  d'itinéraire piétons.</p>
-              </div>
-            </li>
-          </ul>
-          <label class="toggle">
-            <input class="toggle-checkbox" type="checkbox" id="editorcb">
-            <div class="toggle-switch"></div>
-            <span id="editorActive" class="toggle-label">Afficher aussi la voirie</span>
-          </label>
-          <ul class="w3-ul" id="legend_more">
-            <li>
-              <h1><span style="color:grey;" class="w3-left">___&nbsp;</span></h1>
-              <div>
-                <span class="w3-large">Rue avec trottoir séparé</span><br>
-                <p>Les trottoirs de cette rue sont cartographiés séparément (en vert sur la carte). C'est la meilleure
-                  manière de cartographier les trottoirs.</p>
-              </div>
-            </li>
-            <li>
-              <h1><span style="color:grey;" class="w3-left">___&nbsp;</span></h1>
-              <div>
-                <span class="w3-large">Rue sans trottoir</span><br>
-                <p>Cette rue ne permet pas la circulation des piétons.</p>
-              </div>
-            </li>
-            <li>
-              <h1><span style="color:black;" class="w3-left">___&nbsp;</span></h1>
-              <div>
-                <span class="w3-large">Rue sans indication de trottoir</span><br>
-                <p>Il est nécessaire de cartographier les trottoirs de cette rue ou d'indiquer qu'elle n'en possède pas.</p>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </details>
-        `
-        return div;
-    }
-});
-
-new L.Control.Legend({ position: 'topleft' }).addTo(map);
+var sidebar = L.control.sidebar('sidebar', { position: 'left' }).addTo(map);
 
 //---------------------------------------------------
 
@@ -204,18 +98,31 @@ var highwayRegex = new RegExp('^primary|secondary|tertiary|unclassified|resident
 
 // ------------- functions -------------------
 
+function checkOSMAuth() {
+    if (auth.authenticated()){
+        document.getElementById("panel_no_auth").style.display = 'none';
+        document.getElementById("panel_auth_ok").style.display = 'block';
+    } else {
+        document.getElementById("panel_no_auth").style.display = 'block';
+        document.getElementById("panel_auth_ok").style.display = 'none';
+    }
+}
+
+addHighwayCheckBox()
 document.getElementById('editorcb').onchange = (chb) => {
 
     var checkAuth = function (err) {
         if (err) {
             document.getElementById('editorActive').style.color = 'red';
             auth.authenticate(checkAuth);
+            checkOSMAuth()
         }
         else {
             editorMode = true;
             document.getElementById('editorActive').style.color = 'green';
             lastBounds = undefined;
             mapMoveEnd();
+            checkOSMAuth()
         }
     };
 
@@ -233,13 +140,10 @@ document.getElementById('editorcb').onchange = (chb) => {
                 delete lanes[lane];
             }
     }
+    
 };
 
 function mapMoveEnd() {
-    document.getElementById('josm-bbox').href = urlJosm + urlOverpass + getQueryHighways();
-    document.getElementById('id-bbox').href = urlID + '#map=' +
-        document.location.href.substring(document.location.href.indexOf('#') + 1);
-
     var zoom = map.getZoom();
 
     if (zoom <= 12) {
@@ -278,7 +182,7 @@ function mapMoveEnd() {
         if (lane === 'right' || lane === 'left' || lane.startsWith('empty'))
             continue;
         var sideOffset
-        if (lane.startsWith('middle') || lane.startsWith('separate') )
+        if (lane.startsWith('middle') || lane.startsWith('separate'))
             sideOffset = 0
         else
             sideOffset = lanes[lane].options.offset > 0 ? 1 : -1;
@@ -309,20 +213,20 @@ function downloadHere() {
         getContent(urlOverpass + encodeURIComponent(getQuerySidewalks()), parseContent);
 }
 
-function downloading(downloading){
-    if(downloading)
+function downloading(downloading) {
+    if (downloading)
         document.getElementById('fast').innerHTML = 'Téléchargement des données ... ';
     else
         document.getElementById('fast').innerHTML = '';
 }
 
-function withinLastBbox(){
+function withinLastBbox() {
     if (lastBounds == undefined)
         return false;
 
     var bounds = map.getBounds();
     return bounds.getWest() > lastBounds.getWest() && bounds.getSouth() > lastBounds.getSouth() &&
-           bounds.getEast() < lastBounds.getEast() && bounds.getNorth() < lastBounds.getNorth();
+        bounds.getEast() < lastBounds.getEast() && bounds.getNorth() < lastBounds.getNorth();
 }
 
 function parseContent(content) {
@@ -373,22 +277,22 @@ function parseWay(way) {
             emptyway = false;
         }
     }
-    if (isSurfacicSidewalk(way.tag)){
+    if (isSurfacicSidewalk(way.tag)) {
         addLane(polyline, null, 'middle', 'darkgoldenrod', way, isMajor ? offsetMajor : offsetMinor, isMajor);
         emptyway = false;
     }
-    else if (isDedicatedHighway(way.tag)) { 
+    else if (isDedicatedHighway(way.tag)) {
         addLane(polyline, null, 'middle', 'limegreen', way, isMajor ? offsetMajor : offsetMinor, isMajor);
         emptyway = false;
     }
     if (editorMode && isSidewalkSeparate(way.tag)) {
-        addLane(polyline, null, 'separate','grey', way, isMajor ? offsetMajor : offsetMinor, isMajor);
+        addLane(polyline, null, 'separate', 'grey', way, isMajor ? offsetMajor : offsetMinor, isMajor);
         emptyway = false;
     }
     if (editorMode && isNoSidewalk(way.tag)) {
-        addLane(polyline, null, 'separate','grey', way, isMajor ? offsetMajor : offsetMinor, isMajor);
+        addLane(polyline, null, 'separate', 'grey', way, isMajor ? offsetMajor : offsetMinor, isMajor);
         emptyway = false;
-    }    
+    }
     if (editorMode && emptyway && way.tag.filter(x => x.$k == 'highway' && highwayRegex.test(x.$v)).length > 0)
         addLane(polyline, null, 'empty', 'black', way, 0, isMajor);
 }
@@ -400,38 +304,38 @@ function confirmSide(side, tags) {
 function hasSidewalk(side, tags) {
 
     if (side == 'right' &&
-        tags.find(x => x.$k == 'sidewalk' && x.$v == 'right' ||x.$k == 'sidewalk' && x.$v == 'both' ))
+        tags.find(x => x.$k == 'sidewalk' && x.$v == 'right' || x.$k == 'sidewalk' && x.$v == 'both'))
         return true;
     else if (side == 'left' &&
-        tags.find(x => x.$k == 'sidewalk' && x.$v == 'left' ||x.$k == 'sidewalk' && x.$v == 'both' ))
+        tags.find(x => x.$k == 'sidewalk' && x.$v == 'left' || x.$k == 'sidewalk' && x.$v == 'both'))
         return true;
     return false;
 }
 
 function isSurfacicSidewalk(tags) {
-    return (tags.find(tg => tg.$k == 'area' && tg.$v == 'yes' ) && isFootway(tags))
+    return (tags.find(tg => tg.$k == 'area' && tg.$v == 'yes') && isFootway(tags))
 }
 
 function isFootway(tags) {
-    return (tags.find(tg => tg.$k == 'highway' && (tg.$v == 'footway' || tg.$v == 'pedestrian'  || tg.$v == 'steps')))
+    return (tags.find(tg => tg.$k == 'highway' && (tg.$v == 'footway' || tg.$v == 'pedestrian' || tg.$v == 'steps')))
 }
 function hasFoot(tags) {
     return (tags.find(tg => tg.$k == 'foot' && (tg.$v == 'yes' || tg.$v == 'designated')))
 }
 
 function isSidewalkSeparate(tags) {
-    return (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'separate' ))
+    return (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'separate'))
 }
 
 function isNoSidewalk(tags) {
-    return (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'no' ))
+    return (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'no'))
 }
 
 function isDedicatedHighway(tags) {
     return hasFoot(tags) || isFootway(tags);
 }
 
-function wayIsMajor(tags){
+function wayIsMajor(tags) {
     var findResult = tags.find(x => x.$k == 'highway');
     if (findResult) {
         if (findResult.$v.search(/^footway|trunk|primary|secondary|tertiary|unclassified|residential/) >= 0)
@@ -441,14 +345,14 @@ function wayIsMajor(tags){
     }
 }
 
-function wayIsService(tags){
+function wayIsService(tags) {
     if (tags.find(x => x.$k == 'highway' && x.$v == 'service'))
         return true;
     return false;
 }
 
 
-function getContent(url, callback){
+function getContent(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.onload = () => callback(JXON.stringToJs(xhr.responseText));
@@ -459,10 +363,10 @@ function addLane(line, conditions, side, color, osm, offset, isMajor) {
     var id = side + osm.$id;
 
     var lanes_offsets = {
-        'empty':-offset,
-        'left':-offset,
-        'right':offset,
-        'middle':0
+        'empty': -offset,
+        'left': -offset,
+        'right': offset,
+        'middle': 0
     }
 
     lanes[id] = L.polyline(line,
@@ -480,10 +384,14 @@ function addLane(line, conditions, side, color, osm, offset, isMajor) {
 
 function showLaneInfo(e) {
     closeLaneInfo(e);
-    var laneinfo = document.getElementById('edit_way');
-    laneinfo.appendChild(getLaneInfoPanelContent(e.target.options.osm));
-    laneinfo.style.display = 'block';
+    var footwayInfoDetails = document.getElementById('footwayInfoDetails');
+    footwayInfoDetails.appendChild(getLaneInfoPanelContent(e.target.options.osm));
+    footwayInfoDetails.style.display = 'block';
+    var footwayInfoPlaceholder = document.getElementById('footwayInfoPlaceholder'); 
+    footwayInfoPlaceholder.style.display = 'none';       
+    sidebar.open("footwayInfo");
     map.originalEvent.preventDefault();
+    
 }
 
 function getQuerySidewalks() {
@@ -497,13 +405,6 @@ function getQuerySidewalks() {
             ? '[out:xml];(way[highway~"^primary|secondary|tertiary|unclassified|residential|cycleway|service|footway|pedestrian|steps"](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;'
             : '[out:xml];(way["highway"][sidewalk](' + bbox + ');way["highway"~"footway|pedestrian|steps|cycleway"](' + bbox + ');)->.a;(.a;.a >;);out meta;';
     }
-}
-
-function getQueryHighways() {
-    var bounds = map.getBounds();
-    var bbox = [bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast()].join(',');
-    var tag = 'highway~"^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service"';
-    return '[out:xml];(way[' + tag + '](' + bbox + ');>;way[' + tag + '](' + bbox + ');<;);out meta;';
 }
 
 function getQueryOsmId(id) {
@@ -554,7 +455,7 @@ function getLaneInfoPanelContent(osm) {
         var onlyOneSide = false;
         var ParseTagsFromHighway = function (tags) {
             var check_if_sidewalk = false
-            
+
             var highway_type = "Cheminement piéton"
             if (tags.find(tg => tg.$k == 'highway' && tg.$v == 'steps')) {
                 highway_type = "Escalier"
@@ -590,7 +491,7 @@ function getLaneInfoPanelContent(osm) {
                     "yes": "Est éclairé",
                     "no": "N'est pas éclairé",
                 }
-                highway_properties.push(`${lit_mapping[tag[0]['$v']]}`);            
+                highway_properties.push(`${lit_mapping[tag[0]['$v']]}`);
             }
             if (tags.find(tg => tg.$k == 'width')) {
                 var tag = osm.tag.filter(tg => tg.$k == 'width');
@@ -611,15 +512,15 @@ function getLaneInfoPanelContent(osm) {
 
             if (tags.find(tg => tg.$k == 'incline')) {
                 var tag = osm.tag.filter(tg => tg.$k == 'incline');
-                if (tag[0]['$v'] == "up" || tag[0]['$v'] == "down" ) {
+                if (tag[0]['$v'] == "up" || tag[0]['$v'] == "down") {
                     highway_properties.push(`Cheminement en pente`);
                 } else {
                     highway_properties.push(`Pente : <i>${tag[0]['$v']}</i> %`);
-                }  
+                }
             }
             if (tags.find(tg => tg.$k == 'incline:across')) {
                 var tag = osm.tag.filter(tg => tg.$k == 'incline:across');
-                highway_properties.push(`Pente latérale: <i>${tag[0]['$v']}</i> %`); 
+                highway_properties.push(`Pente latérale: <i>${tag[0]['$v']}</i> %`);
             }
 
             if (tags.find(tg => tg.$k == 'step_count')) {
@@ -629,17 +530,17 @@ function getLaneInfoPanelContent(osm) {
                 var tag = osm.tag.filter(tg => tg.$k == 'est_step_count');
                 highway_properties.push(`Nombre approx. de marches : <i>${tag[0]['$v']}</i>`);
             }
-            if (tags.find(tg => tg.$k == 'tactile_paving') || tags.find(tg => tg.$k == 'guide_strips') ) {
+            if (tags.find(tg => tg.$k == 'tactile_paving') || tags.find(tg => tg.$k == 'guide_strips')) {
                 highway_properties.push(`Guidage podotactile disponible`);
             }
 
             //TODO :
             // wheelchair
             // all crossing tags
-            
+
             let prop_as_text = ""
             function display_properties(value, index, array) {
-                prop_as_text += `<li>${value}</li>`; 
+                prop_as_text += `<li>${value}</li>`;
             }
             highway_properties.forEach(display_properties);
 
@@ -647,7 +548,7 @@ function getLaneInfoPanelContent(osm) {
             var sidewalk_tag = "pas d'info sur les trottoirs de cette rue"
             if (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'both')) {
                 var sidewalk_tag = "trottoir des deux côtés"
-            } else if (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'right')){
+            } else if (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'right')) {
                 var sidewalk_tag = "trottoir d'un côté uniquement'"
             }
 
@@ -663,14 +564,13 @@ function getLaneInfoPanelContent(osm) {
             <h6>Éditeurs externes</h6>
             `
             if (!editorMode) {
-                var edit_buttons =''
+                var edit_buttons = ''
             }
 
-            tagsBlock.innerHTML=`
-            <div class="w3-light-grey">
-                <div class="w3-row-padding w3-content">
-                    <h4 class="w3-opacity"><b><span id="object_name_html">${highway_type}</span></b></h4>
-                    <div id="object_detail_html">
+            tagsBlock.innerHTML = `
+            <div>
+                <div class="w3-content">
+                    <h4 class="w3-opacity"><b><span id="object_name_html">${highway_type}</span></b></h4>              
                     <div class="w3-container w3-card w3-white w3-margin-bottom">
                         <div class="w3-container">
                         <h5 class="w3-opacity"><b>Propriétés</b></h5>
@@ -678,7 +578,6 @@ function getLaneInfoPanelContent(osm) {
                             ${check_if_sidewalk ? sidewalk_tag : prop_as_text}
                         </ul>
                         </div>
-                    </div>
                     </div>
                     <p></p>
                     <div>
@@ -692,7 +591,7 @@ function getLaneInfoPanelContent(osm) {
                                 style="width:60px"> JOSM</a>
                             <a class="w3-bar-item" target="_blank" href="https://www.openstreetmap.org/edit?editor=id&way=${osm.$id}"><img src="images/logo/iD.png" class="w3-border" alt="ID icon"
                                 style="width:60px">iD</a>
-                            <a class="w3-bar-item" target="_blank" href="https://nlehuby.github.io/sidewalker/streetcomplete"><img src="images/logo/streetcomplete.svg" class="w3-border" alt="StreetComplete icon"
+                            <a class="w3-bar-item" onclick="sidebar.open('mobileEdit')" style="text-decoration: underline;"><img src="images/logo/streetcomplete.svg" class="w3-border" alt="StreetComplete icon"
                                 style="width:60px">StreetComplete</a>
                         </div>
                         <p><i class="w3-margin-right">🔗</i><a href="https://openstreetmap.org/way/${osm.$id}" target="_blank">Voir
@@ -715,21 +614,33 @@ function getLaneInfoPanelContent(osm) {
     }
 }
 
+function addHighwayCheckBox(){
+    var div = document.createElement('div');
+    div.innerHTML = `
+    <label class="toggle">
+                    <input class="toggle-checkbox" type="checkbox" id="editorcb">
+                    <div class="toggle-switch"></div>
+                    <span id="editorActive" class="toggle-label">Afficher aussi la voirie</span>
+                </label>`
+    var parent = document.getElementById("home");
+    parent.appendChild(div)
+}
+
 function setBacklight(osm) {
     var onlyOneSide = false;
     var polyline = [];
-    if (lanes['right' + osm.$id]){
+    if (lanes['right' + osm.$id]) {
         polyline = lanes['right' + osm.$id].getLatLngs();
     } else if (lanes['left' + osm.$id]) {
         polyline = lanes['left' + osm.$id].getLatLngs();
-    } else if (lanes['middle' + osm.$id]){
+    } else if (lanes['middle' + osm.$id]) {
         polyline = lanes['middle' + osm.$id].getLatLngs();
         onlyOneSide = true;
     } else {
         polyline = lanes['empty' + osm.$id].getLatLngs();
     };
 
-    if (wayIsService(osm.tag)){
+    if (wayIsService(osm.tag)) {
         onlyOneSide = true;
     };
 
@@ -778,7 +689,7 @@ function setBacklight(osm) {
 
 function set_sidewalk_separate_tag(osm_id) {
     var osm = ways[osm_id];
-    if (osm.tag.find(tg => tg.$k == 'sidewalk')){
+    if (osm.tag.find(tg => tg.$k == 'sidewalk')) {
         osm.tag.find(tg => tg.$k == 'sidewalk').$v = "separate"
     } else {
         osm.tag.push({ $k: 'sidewalk', $v: 'separate' })
@@ -789,10 +700,10 @@ function set_sidewalk_separate_tag(osm_id) {
 }
 
 function set_sidewalk_tag(osm_id, sidewalk_value) {
-    
+
     var osm = ways[osm_id];
     //prepare data for OSM edit
-    if (osm.tag.find(tg => tg.$k == 'sidewalk')){
+    if (osm.tag.find(tg => tg.$k == 'sidewalk')) {
         osm.tag.find(tg => tg.$k == 'sidewalk').$v = sidewalk_value
     } else {
         osm.tag.push({ $k: 'sidewalk', $v: sidewalk_value })
@@ -800,18 +711,18 @@ function set_sidewalk_tag(osm_id, sidewalk_value) {
 
     //find the already displayed lanes
     var polyline = [];
-    if (lanes['right' + osm_id]){
+    if (lanes['right' + osm_id]) {
         polyline = lanes['right' + osm_id].getLatLngs();
-      } else if (lanes['left' + osm_id]) {
+    } else if (lanes['left' + osm_id]) {
         polyline = lanes['left' + osm_id].getLatLngs();
-      } else if (lanes['middle' + osm_id]){
+    } else if (lanes['middle' + osm_id]) {
         polyline = lanes['middle' + osm_id].getLatLngs();
-      } else {
+    } else {
         polyline = lanes['empty' + osm_id].getLatLngs();
-      };
+    };
     var isMajor = wayIsMajor(osm.tag);
     //add new lane display
-    addLane(polyline, null, 'separate','grey', osm, isMajor ? offsetMajor : offsetMinor, isMajor);
+    addLane(polyline, null, 'separate', 'grey', osm, isMajor ? offsetMajor : offsetMinor, isMajor);
     //remove display ed lanes
     if (lanes['empty' + osm_id]) {
         lanes['empty' + osm_id].remove();
@@ -895,7 +806,7 @@ function saveChangesets(changesetId) {
         content: text
     }, function (err, details) {
         closeChangset(changesetId);
-        });
+    });
 }
 
 function closeChangset(changesetId) {
@@ -949,9 +860,12 @@ function createChangset() {
 }
 
 function closeLaneInfo(e) {
-    var laneinfo = document.getElementById('edit_way');
-    laneinfo.style.display = 'none';
-    laneinfo.innerHTML = '';
+    var footwayInfoDetails = document.getElementById('footwayInfoDetails');
+    footwayInfoDetails.style.display = 'none';
+    footwayInfoDetails.innerHTML = '';
+    var footwayInfoPlaceholder = document.getElementById('footwayInfoPlaceholder');
+    footwayInfoPlaceholder.style.display = 'block';
+    sidebar.close();
 
     for (var marker in markers) {
         markers[marker].remove();
@@ -963,10 +877,12 @@ function closeLaneInfo(e) {
     if (lanes['left'])
         lanes['left'].remove();
     if (lanes['middle'])
-            lanes['middle'].remove();
+        lanes['middle'].remove();
 }
 
+//---------------------------------------------------
 
+checkOSMAuth()
 map.on('moveend', mapMoveEnd);
 map.on('click', closeLaneInfo);
 mapMoveEnd();

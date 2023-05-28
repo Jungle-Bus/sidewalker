@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.62.0/dist/L.Control.Locate.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/leaflet-sidebar_v2-0.4.0/leaflet-sidebar.min.css" />
+    <link rel="stylesheet" href="index.css" />
     <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
     <script src="https://cdn.rawgit.com/Zverik/leaflet-grayscale/master/TileLayer.Grayscale.js"></script>
     <script src="https://cdn.rawgit.com/bbecquet/Leaflet.PolylineOffset/master/leaflet.polylineoffset.js"></script>
@@ -18,12 +20,181 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.62.0/src/L.Control.Locate.min.js"></script>
     <script src="https://cdn.rawgit.com/tyrasd/jxon/master/jxon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/osm-auth@1.1.2/osmauth.js"></script>
-    <link rel="stylesheet" href="index.css" />
+    <script src="assets/leaflet-sidebar_v2-0.4.0/leaflet-sidebar.min.js"></script>
+
 
 </head>
 
 <body>
     <div id="map"></div>
+    <div id="sidebar" class="sidebar collapsed">
+        <!-- Nav tabs -->
+        <div class="sidebar-tabs">
+            <ul role="tablist">
+                <li><a href="#footwayInfo" role="tab"></a></li>
+                <li><a href="#home" role="tab"><i class="fa fa-info"></i></a></li>
+                <li><a href="#about" role="tab"><i class="fa fa-question"></i></a></li>
+                <li><a href="#mobileEdit" role="tab"><i class="fa fa-mobile"></i></a></li>
+            </ul>
+
+            <ul role="tablist">
+                <li><a href="#OSMProfile" role="tab"><i class="fa fa-user"></i></a></li>
+            </ul>
+        </div>
+
+        <!-- Tab panes -->
+        <div class="sidebar-content">
+            <div class="sidebar-pane" id="home">
+                <h1 class="sidebar-header">
+                    Légende
+                    <span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+                </h1>
+
+
+                <ul class="w3-ul w3-small">
+                    <li>
+                        <h1><span class="w3-left" style="color:LimeGreen;">___&nbsp;</span></h1>
+                        <div>
+                            <span class="w3-large">Cheminement dédié aux piétons </span><br>
+                            <p>un trottoir, une rue piétonne, un escalier, etc (Cliquez dessus pour en savoir plus)</p>
+                        </div>
+                    </li>
+                    <li>
+                        <h1><span style="color:DodgerBlue;" class="w3-left">___&nbsp;</span></h1>
+                        <div>
+                            <span class="w3-large">Trottoir renseigné au niveau de la voirie</span><br>
+                            <p>Cette méthode de cartographie est en général mal supportée par les calculateurs et rendus
+                                piétons. De
+                                plus, elle ne permet pas une parfaite description des intersections, notamment pour
+                                l'accessibilité.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <h1><span style="color:DarkGoldenRod;" class="w3-left">___&nbsp;</span></h1>
+                        <div>
+                            <span class="w3-large">Trottoir renseigné sous la forme d'une surface</span><br>
+                            <p>Cette méthode de cartographie fait des jolis rendus, mais n'est en général pas gérée par
+                                les calculateurs
+                                d'itinéraire piétons.</p>
+                        </div>
+                    </li>
+                </ul>
+                <ul class="w3-ul w3-small" id="legend_more">
+                    <li>
+                        <h1><span style="color:grey;" class="w3-left">___&nbsp;</span></h1>
+                        <div>
+                            <span class="w3-large">Rue avec trottoir séparé</span><br>
+                            <p>Les trottoirs de cette rue sont cartographiés séparément (en vert sur la carte). C'est la
+                                meilleure
+                                manière de cartographier les trottoirs.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <h1><span style="color:grey;" class="w3-left">___&nbsp;</span></h1>
+                        <div>
+                            <span class="w3-large">Rue sans trottoir</span><br>
+                            <p>Cette rue ne permet pas la circulation des piétons.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <h1><span style="color:black;" class="w3-left">___&nbsp;</span></h1>
+                        <div>
+                            <span class="w3-large">Rue sans indication de trottoir</span><br>
+                            <p>Il est nécessaire de cartographier les trottoirs de cette rue ou d'indiquer qu'elle n'en
+                                possède pas.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-pane" id="footwayInfo">
+                <h1 class="sidebar-header">Détails<span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+                </h1>
+                <p id="footwayInfoDetails"></p>
+                <p id="footwayInfoPlaceholder">Cliquez sur un cheminement sur la carte pour voir les informations déjà
+                    renseignées dans OpenStreetMap.</p>
+            </div>
+
+            <div class="sidebar-pane" id="mobileEdit">
+                <h1 class="sidebar-header">Contribuer sur mobile<span class="sidebar-close"><i
+                            class="fa fa-caret-left"></i></span>
+                </h1>
+
+                <p>Pour modifier des cheminements piétons depuis votre mobile Android, utilisez l’application
+                    StreetComplete !</p>
+
+                <p class="w3-center"><img src="/images/logo/streetcomplete.svg" alt="streetcomplete logo" /></p>
+
+                <h1 id="étape-1">Étape 1</h1>
+
+                <p>Télécharger l’application :</p>
+
+                <p><a href="https://play.google.com/store/apps/details?id=de.westnordost.streetcomplete"><img
+                            src="https://streetcomplete.app/res/google-play-badge.png" style="width:40%;"
+                            alt="Google play logo" /></a>
+                    <a href="https://f-droid.org/packages/de.westnordost.streetcomplete/"><img
+                            src="https://streetcomplete.app/res/f-droid-badge.png" style="width:40%;"
+                            alt="FDroid logo" /></a>
+                </p>
+
+                <h1 id="étape-2">Étape 2</h1>
+
+                <p>Ouvrir l’application StreetComplete sur votre mobile.</p>
+
+                <h1 id="étape-3">Étape 3</h1>
+
+                <p>Scanner le QR code ou <a
+                        href="streetcomplete://s?n=trottoirs&amp;q=pedvmx3eilni9g95ukiujmkdr9wmpt&amp;qo=1n.1l">suivre
+                        ce lien</a> pour sélectionner les quêtes utiles aux cheminements.</p>
+
+                <p class="w3-center"><img src="/images/streetcomplete_QR.png" alt="streetcomplete QR code" /></p>
+
+
+            </div>
+
+            <div class="sidebar-pane" id="about">
+                <h1 class="sidebar-header">À propos<span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+                </h1>
+
+                <p>Cet outil permet de visualiser les cheminements piétons présents dans OpenStreetMap.</p>
+
+                <p>En effet, la marche à pied est à la fois un mode de déplacement écologique et abordable et une activité de loisir. Les cheminements piétons méritent donc une place de choix dans OpenStreetMap, le carte du monde libre et ouvert.</p>
+
+                <p>En particulier, il existe plusieurs manières de cartographier les trottoirs dans OpenStreetMap et cette carte permet de les visualiser. Pour en savoir plus : 
+                    <ul>
+                        <li><a href="#" onclick="sidebar.open('home')">Consulter la légende</a></li>
+                        <li><a href="https://wiki.openstreetmap.org/wiki/FR:Cheminements_pi%C3%A9tons" target="_blank">Lire la documentation sur le wiki</a></li>
+                    </ul>
+                </p>
+
+                <p>Visualisez, puis ouvrez votre éditeur préféré pour cartographier des trottoirs et des cheminements piétons et verdir cette carte !</p>
+
+                <p class="w3-small">Ce site est un logiciel libre, vous pouvez <a href="https://github.com/nlehuby/sidewalker" target="_blank">voir le code source et contribuer à son développement sur github.</a></p>
+            </div>
+
+            <div class="sidebar-pane" id="OSMProfile">
+                <h1 class="sidebar-header">Compte OSM<span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+                </h1>
+
+                <p>Ce site permet d'effectuer quelques modifications simples sur les rues dans OpenStreetMap :
+                    <ul>
+                        <li>Indiquer qu'une rue n'a aucun trottoir</li>
+                        <li>Indiquer que les trottoir d'une rue sont déjà cartographiés (afin d'éviter les doublons)</li>
+                    </ul>
+
+                    Pour effectuer ces modifications, il est nécessaire d'être connecté à OpenStreetMap, et d'afficher toute la voirie 
+                    (en cochant la case dans <a href="#" onclick="sidebar.open('home')">légende</a>).
+                </p>
+                <p class="w3-panel w3-pale-green" id="panel_auth_ok">
+                    Vous êtes connecté(e) à OSM. <a href="#" onclick="auth.logout();checkOSMAuth()">Se déconnecter</a>
+                </p>
+                <p class="w3-panel w3-pale-red" id="panel_no_auth">
+                    Vous n'êtes pas encore connecté(e) à OSM. <a href="#" onclick="auth.authenticate(checkOSMAuth)">Se connecter</a>
+                </p>                
+
+            </div>
+        </div>
+    </div>
 
     <script src="config.js"></script>
     <script src="sidewalks.js"></script>
