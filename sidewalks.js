@@ -79,21 +79,7 @@ L.Control.Save = L.Control.extend({
 
 new L.Control.Save({ position: 'topright' }).addTo(map);
 
-//------------- LaneInfo control --------------------
-
-L.Control.EditWay = L.Control.extend({
-    onAdd: map => {
-        var div = L.DomUtil.create('div', 'leaflet-control-layers control-padding');
-        div.id = 'edit_way';
-        div.onclick = div.onpointerdown = div.onmousedown = div.ondblclick = L.DomEvent.stopPropagation;
-        div.style.display = 'none';
-        return div;
-    }
-});
-
-new L.Control.EditWay({ position: 'topleft' }).addTo(map);
-
-//---------------------------------------------------
+//------------- Sidebar --------------------
 
 var sidebar = L.control.sidebar('sidebar', { position: 'left' }).addTo(map);
 
@@ -411,10 +397,14 @@ function addLane(line, conditions, side, color, osm, offset, isMajor) {
 
 function showLaneInfo(e) {
     closeLaneInfo(e);
-    var laneinfo = document.getElementById('edit_way');
-    laneinfo.appendChild(getLaneInfoPanelContent(e.target.options.osm));
-    laneinfo.style.display = 'block';
+    var footwayInfoDetails = document.getElementById('footwayInfoDetails');
+    footwayInfoDetails.appendChild(getLaneInfoPanelContent(e.target.options.osm));
+    footwayInfoDetails.style.display = 'block';
+    var footwayInfoPlaceholder = document.getElementById('footwayInfoPlaceholder'); 
+    footwayInfoPlaceholder.style.display = 'none';       
+    sidebar.open("footwayInfo");
     map.originalEvent.preventDefault();
+    
 }
 
 function getQuerySidewalks() {
@@ -880,9 +870,12 @@ function createChangset() {
 }
 
 function closeLaneInfo(e) {
-    var laneinfo = document.getElementById('edit_way');
-    laneinfo.style.display = 'none';
-    laneinfo.innerHTML = '';
+    var footwayInfoDetails = document.getElementById('footwayInfoDetails');
+    footwayInfoDetails.style.display = 'none';
+    footwayInfoDetails.innerHTML = '';
+    var footwayInfoPlaceholder = document.getElementById('footwayInfoPlaceholder');
+    footwayInfoPlaceholder.style.display = 'block';
+    sidebar.close();
 
     for (var marker in markers) {
         markers[marker].remove();

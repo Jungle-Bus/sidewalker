@@ -31,9 +31,10 @@
         <!-- Nav tabs -->
         <div class="sidebar-tabs">
             <ul role="tablist">
-                <li><a href="#profile" role="tab"></a></li>
+                <li><a href="#footwayInfo" role="tab"></a></li>
                 <li><a href="#home" role="tab"><i class="fa fa-info"></i></a></li>
                 <li><a href="#messages" role="tab"><i class="fa fa-question"></i></a></li>
+                <li><a href="#messages" role="tab"><i class="fa fa-mobile"></i></a></li>
             </ul>
 
             <ul role="tablist">
@@ -111,10 +112,11 @@
                 </ul>
             </div>
 
-            <div class="sidebar-pane" id="profile">
+            <div class="sidebar-pane" id="footwayInfo">
                 <h1 class="sidebar-header">Détails<span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
                 </h1>
-                Cliquez sur un cheminement sur la carte pour voir les informations déjà renseignées dans OpenStreetMap.
+                <p id="footwayInfoDetails"></p>
+                <p id="footwayInfoPlaceholder">Cliquez sur un cheminement sur la carte pour voir les informations déjà renseignées dans OpenStreetMap.</p>
             </div>
 
             <div class="sidebar-pane" id="messages">
