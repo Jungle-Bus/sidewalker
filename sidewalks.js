@@ -1,4 +1,4 @@
-﻿var map = L.map('map', { preferCanvas: true, fadeAnimation: false }).setView([48.83926, 2.6493], 17);;
+﻿var map = L.map('map', { preferCanvas: true, fadeAnimation: false, zoomControl: false }).setView([48.83926, 2.6493], 17);;
 var hash = new L.Hash(map);
 
 
@@ -8,7 +8,8 @@ L.tileLayer.grayscale('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 20,
 }).addTo(map);
 
-L.control.locate({ drawCircle: false, drawMarker: true }).addTo(map);
+L.control.zoom({position: "topright" }).addTo(map);
+L.control.locate({ drawCircle: false, drawMarker: true, position: "topright" }).addTo(map);
 
 //------------- GitHub control ------------------
 
@@ -38,7 +39,7 @@ new L.Control.Link({ position: 'bottomright' }).addTo(map);
 L.Control.Info = L.Control.extend({
     onAdd: map => {
         var div = L.DomUtil.create('div', 'leaflet-control-layers control-padding control-bigfont control-button');
-        div.innerHTML = 'Zoom in on the map';
+        div.innerHTML = 'Zoomez pour voir les cheminements';
         div.style.background = 'yellow';
         div.id = 'info';
         div.onclick = () => map.setZoom(viewMinZoom);
@@ -68,7 +69,7 @@ L.Control.Save = L.Control.extend({
     onAdd: map => {
         var div = L.DomUtil.create('button', 'leaflet-control-layers control-padding control-bigfont');
         div.id = 'saveChangeset';
-        div.innerText = 'Save';
+        div.innerText = 'Envoyer';
         div.style.background = 'yellow';
         div.style.display = 'none';
         div.onclick = createChangset;
@@ -90,7 +91,7 @@ L.Control.EditWay = L.Control.extend({
     }
 });
 
-new L.Control.EditWay({ position: 'topright' }).addTo(map);
+new L.Control.EditWay({ position: 'topleft' }).addTo(map);
 
 //------------- Legend control --------------------
 
@@ -163,7 +164,7 @@ L.Control.Legend = L.Control.extend({
     }
 });
 
-new L.Control.Legend({ position: 'topright' }).addTo(map);
+new L.Control.Legend({ position: 'topleft' }).addTo(map);
 
 //---------------------------------------------------
 
@@ -196,7 +197,7 @@ var lastBounds;
 var editorMode = false;
 var saving = false;
 
-var viewMinZoom = 14;
+var viewMinZoom = 15;
 
 var highwayRegex = new RegExp('^primary|secondary|tertiary|unclassified|residential|service|footway|pedestrian');
 
