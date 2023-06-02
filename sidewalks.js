@@ -97,7 +97,7 @@ var highwayRegex = new RegExp('^primary|secondary|tertiary|unclassified|resident
 // ------------- functions -------------------
 
 function checkOSMAuth() {
-    if (auth.authenticated()){
+    if (auth.authenticated()) {
         document.getElementById("panel_no_auth").style.display = 'none';
         document.getElementById("panel_auth_ok").style.display = 'block';
     } else {
@@ -138,7 +138,7 @@ document.getElementById('editorcb').onchange = (chb) => {
                 delete lanes[lane];
             }
     }
-    
+
 };
 
 function mapMoveEnd() {
@@ -171,7 +171,7 @@ function mapMoveEnd() {
         weightMinor = 1.5;
     } else if (zoom >= 18) {
         offsetMajor = 8;
-        weightMajor = 3;
+        weightMajor = 4;
         offsetMinor = 3;
         weightMinor = 2;
     }
@@ -276,7 +276,7 @@ function parseWay(way) {
         }
     }
     if (isSurfacicSidewalk(way.tag)) {
-        addLane(polyline, null, 'middle', 'darkgoldenrod', way, isMajor ? offsetMajor : offsetMinor, isMajor);
+        addLane(polyline, null, 'middle', 'darkgoldenrod', way, offsetMinor, false);
         emptyway = false;
     }
     else if (isDedicatedHighway(way.tag)) {
@@ -334,13 +334,11 @@ function isDedicatedHighway(tags) {
 }
 
 function wayIsMajor(tags) {
-    var findResult = tags.find(x => x.$k == 'highway');
-    if (findResult) {
-        if (findResult.$v.search(/^footway|trunk|primary|secondary|tertiary|unclassified|residential/) >= 0)
-            return true;
-        else
-            return false;
-    }
+    if (tags.find(x => x.$k == 'footway' && x.$v == 'crossing')) { return false; }
+    if (tags.find(x => x.$k == 'highway' && x.$v == 'steps')) { return false; }
+    if (tags.find(x => x.$k == 'highway' && x.$v == 'living_street')) { return false; }
+    if (tags.find(x => x.$k == 'highway' && x.$v == 'service')) { return false; }
+    return true
 }
 
 function wayIsService(tags) {
@@ -385,11 +383,11 @@ function showLaneInfo(e) {
     var footwayInfoDetails = document.getElementById('footwayInfoDetails');
     footwayInfoDetails.appendChild(getLaneInfoPanelContent(e.target.options.osm));
     footwayInfoDetails.style.display = 'block';
-    var footwayInfoPlaceholder = document.getElementById('footwayInfoPlaceholder'); 
-    footwayInfoPlaceholder.style.display = 'none';       
+    var footwayInfoPlaceholder = document.getElementById('footwayInfoPlaceholder');
+    footwayInfoPlaceholder.style.display = 'none';
     sidebar.open("footwayInfo");
     map.originalEvent.preventDefault();
-    
+
 }
 
 function getQuerySidewalks() {
@@ -546,12 +544,11 @@ function getLaneInfoPanelContent(osm) {
             var sidewalk_tag = "pas d'info sur les trottoirs de cette rue"
             if (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'both')) {
                 var sidewalk_tag = "trottoir des deux côtés"
-            } else if (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'right'||'left')) {
+            } else if (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == ('right' || 'left'))) {
                 var sidewalk_tag = "trottoir d'un côté uniquement"
-            } else if (tags.find(tg => tg.$k == 'sidewalk:left'||'sidewalk:right' && tg.$v == 'yes')) {
+            } else if (tags.find(tg => tg.$k == ('sidewalk:left' || 'sidewalk:right') && tg.$v == 'yes')) {
                 var sidewalk_tag = "trottoir d'un côté uniquement"
-            }      
-
+            }
             var tagsBlock = document.createElement('div');
 
             var edit_buttons = `
@@ -614,7 +611,7 @@ function getLaneInfoPanelContent(osm) {
     }
 }
 
-function addHighwayCheckBox(){
+function addHighwayCheckBox() {
     var div = document.createElement('div');
     div.innerHTML = `
     <label class="toggle">
