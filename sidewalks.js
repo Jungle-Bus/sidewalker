@@ -75,8 +75,6 @@ var weightMajor = 3;
 var offsetMinor = 6;
 var weightMinor = 3;
 
-var newWayId = -1;
-
 var change = {
     osmChange: {
         $version: '0.1',
@@ -304,10 +302,10 @@ function confirmSide(side, tags) {
 function hasSidewalk(side, tags) {
 
     if (side == 'right' &&
-        tags.find(x => x.$k == 'sidewalk' && x.$v == 'right' || x.$k == 'sidewalk' && x.$v == 'both'))
+        tags.find(x => x.$k == 'sidewalk' && x.$v == 'right' || x.$k == 'sidewalk' && x.$v == 'both' || x.$k == 'sidewalk:right' && x.$v == 'yes'))
         return true;
     else if (side == 'left' &&
-        tags.find(x => x.$k == 'sidewalk' && x.$v == 'left' || x.$k == 'sidewalk' && x.$v == 'both'))
+        tags.find(x => x.$k == 'sidewalk' && x.$v == 'left' || x.$k == 'sidewalk' && x.$v == 'both' || x.$k == 'sidewalk:left' && x.$v == 'yes'))
         return true;
     return false;
 }
@@ -403,7 +401,7 @@ function getQuerySidewalks() {
         var bbox = [bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast()].join(',');
         return editorMode
             ? '[out:xml];(way[highway~"^primary|secondary|tertiary|unclassified|residential|cycleway|service|footway|pedestrian|steps"](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;'
-            : '[out:xml];(way["highway"][sidewalk](' + bbox + ');way["highway"~"footway|pedestrian|steps|cycleway"](' + bbox + ');)->.a;(.a;.a >;);out meta;';
+            : '[out:xml];(way["highway"][sidewalk](' + bbox + ');way["highway"]["sidewalk:left"](' + bbox + ');way["highway"]["sidewalk:right"](' + bbox + ');way["highway"~"footway|pedestrian|steps|cycleway"](' + bbox + ');)->.a;(.a;.a >;);out meta;';
     }
 }
 
@@ -548,9 +546,11 @@ function getLaneInfoPanelContent(osm) {
             var sidewalk_tag = "pas d'info sur les trottoirs de cette rue"
             if (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'both')) {
                 var sidewalk_tag = "trottoir des deux côtés"
-            } else if (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'right')) {
-                var sidewalk_tag = "trottoir d'un côté uniquement'"
-            }
+            } else if (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'right'||'left')) {
+                var sidewalk_tag = "trottoir d'un côté uniquement"
+            } else if (tags.find(tg => tg.$k == 'sidewalk:left'||'sidewalk:right' && tg.$v == 'yes')) {
+                var sidewalk_tag = "trottoir d'un côté uniquement"
+            }      
 
             var tagsBlock = document.createElement('div');
 
@@ -587,11 +587,11 @@ function getLaneInfoPanelContent(osm) {
                         ${check_if_sidewalk ? edit_buttons : ""}
 
                         <div class="w3-bar">
-                            <a class="w3-bar-item" target="_blank" href="http://localhost:8111/load_object?objects=w${osm.$id}"><img src="images/logo/josm.png" class="w3-border" alt="JOSM icon"
+                            <a class="w3-bar-item" target="_blank" href="http://localhost:8111/load_object?objects=w${osm.$id}"><img src="images/logo/josm.png" alt="JOSM icon"
                                 style="width:60px"> JOSM</a>
-                            <a class="w3-bar-item" target="_blank" href="https://www.openstreetmap.org/edit?editor=id&way=${osm.$id}"><img src="images/logo/iD.png" class="w3-border" alt="ID icon"
+                            <a class="w3-bar-item" target="_blank" href="https://www.openstreetmap.org/edit?editor=id&way=${osm.$id}"><img src="images/logo/iD.png" alt="ID icon"
                                 style="width:60px">iD</a>
-                            <a class="w3-bar-item" onclick="sidebar.open('mobileEdit')" style="text-decoration: underline;"><img src="images/logo/streetcomplete.svg" class="w3-border" alt="StreetComplete icon"
+                            <a class="w3-bar-item" onclick="sidebar.open('mobileEdit')" style="text-decoration: underline;"><img src="images/logo/streetcomplete.svg" alt="StreetComplete icon"
                                 style="width:60px">StreetComplete</a>
                         </div>
                         <p><i class="w3-margin-right">🔗</i><a href="https://openstreetmap.org/way/${osm.$id}" target="_blank">Voir
@@ -687,18 +687,6 @@ function setBacklight(osm) {
 }
 
 
-function set_sidewalk_separate_tag(osm_id) {
-    var osm = ways[osm_id];
-    if (osm.tag.find(tg => tg.$k == 'sidewalk')) {
-        osm.tag.find(tg => tg.$k == 'sidewalk').$v = "separate"
-    } else {
-        osm.tag.push({ $k: 'sidewalk', $v: 'separate' })
-    }
-    //TODO modifier le rendu et le texte
-    prepare_changeset(osm);
-    closeLaneInfo();
-}
-
 function set_sidewalk_tag(osm_id, sidewalk_value) {
 
     var osm = ways[osm_id];
@@ -707,6 +695,15 @@ function set_sidewalk_tag(osm_id, sidewalk_value) {
         osm.tag.find(tg => tg.$k == 'sidewalk').$v = sidewalk_value
     } else {
         osm.tag.push({ $k: 'sidewalk', $v: sidewalk_value })
+    }
+    //remove sidewalk:left & sidewalk:right tags if any
+    if (osm.tag.find(tg => tg.$k == 'sidewalk:left')) {
+        var index = osm.tag.indexOf(osm.tag.find(tg => tg.$k == 'sidewalk:left'));
+        osm.tag.splice(index, 1);
+    }
+    if (osm.tag.find(tg => tg.$k == 'sidewalk:right')) {
+        var index = osm.tag.indexOf(osm.tag.find(tg => tg.$k == 'sidewalk:right'));
+        osm.tag.splice(index, 1);
     }
 
     //find the already displayed lanes
