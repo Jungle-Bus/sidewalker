@@ -335,6 +335,8 @@ function isDedicatedHighway(tags) {
 
 function wayIsMajor(tags) {
     if (tags.find(x => x.$k == 'footway' && x.$v == 'crossing')) { return false; }
+    if (tags.find(x => x.$k == 'highway' && x.$v == 'path')) { return false; }
+    if (tags.find(x => x.$k == 'path' && x.$v == 'crossing')) { return false; }
     if (tags.find(x => x.$k == 'highway' && x.$v == 'steps')) { return false; }
     if (tags.find(x => x.$k == 'highway' && x.$v == 'living_street')) { return false; }
     if (tags.find(x => x.$k == 'highway' && x.$v == 'service')) { return false; }
@@ -398,8 +400,8 @@ function getQuerySidewalks() {
     } else {
         var bbox = [bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast()].join(',');
         return editorMode
-            ? '[out:xml];(way[highway~"^primary|secondary|tertiary|unclassified|residential|cycleway|service|footway|pedestrian|steps"](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;'
-            : '[out:xml];(way["highway"][sidewalk](' + bbox + ');way["highway"]["sidewalk:left"](' + bbox + ');way["highway"]["sidewalk:right"](' + bbox + ');way["highway"~"footway|pedestrian|steps|cycleway"](' + bbox + ');)->.a;(.a;.a >;);out meta;';
+            ? '[out:xml];(way[highway~"^primary|secondary|tertiary|unclassified|residential|cycleway|service|footway|pedestrian|steps|path"](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;'
+            : '[out:xml];(way["highway"][sidewalk](' + bbox + ');way["highway"]["sidewalk:left"](' + bbox + ');way["highway"]["sidewalk:right"](' + bbox + ');way["highway"~"footway|pedestrian|steps|cycleway|path"](' + bbox + ');)->.a;(.a;.a >;);out meta;';
     }
 }
 
@@ -463,8 +465,14 @@ function getLaneInfoPanelContent(osm) {
                 highway_type = "Rue piétonne"
             } else if (tags.find(tg => tg.$k == 'highway' && tg.$v == 'footway') && tags.find(tg => tg.$k == 'footway' && tg.$v == 'sidewalk')) {
                 highway_type = "Trottoir"
+            } else if (tags.find(tg => tg.$k == 'highway' && tg.$v == 'footway') && tags.find(tg => tg.$k == 'footway' && tg.$v == 'access_aisle')) {
+                highway_type = "Cheminement piéton d'accès au stationnement"                
+            } else if (tags.find(tg => tg.$k == 'highway' && tg.$v == 'footway') && tags.find(tg => tg.$k == 'footway' && tg.$v == 'traffic_island')) {
+                highway_type = "Îlot de refuge"
             } else if (tags.find(tg => tg.$k == 'highway' && tg.$v == 'footway') && tags.find(tg => tg.$k == 'footway' && tg.$v == 'crossing')) {
                 highway_type = "Passage piéton"
+            } else if (tags.find(tg => tg.$k == 'foot' && tg.$v == 'designated') && tags.find(tg => tg.$k == 'path' && tg.$v == 'crossing')) {
+                highway_type = "Passage piéton"                
             } else if (tags.find(tg => tg.$k == 'highway' && tg.$v == 'footway') && tags.find(tg => tg.$k == 'indoor' && tg.$v == 'yes')) {
                 highway_type = "Cheminement en intérieur"
             } else if (tags.find(tg => tg.$k == 'highway' && tg.$v == 'footway')) {
@@ -516,7 +524,7 @@ function getLaneInfoPanelContent(osm) {
             }
             if (tags.find(tg => tg.$k == 'incline:across')) {
                 var tag = osm.tag.filter(tg => tg.$k == 'incline:across');
-                highway_properties.push(`Pente latérale: <i>${tag[0]['$v']}</i> %`);
+                highway_properties.push(`Pente latérale : <i>${tag[0]['$v']}</i> %`);
             }
 
             if (tags.find(tg => tg.$k == 'step_count')) {
