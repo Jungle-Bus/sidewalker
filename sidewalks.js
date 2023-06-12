@@ -61,6 +61,26 @@ new L.Control.Save({ position: 'topright' }).addTo(map);
 var sidebar = L.control.sidebar('sidebar', { position: 'left' }).addTo(map);
 
 //---------------------------------------------------
+const footpathsLayer = L.layerGroup();
+const surfacicFootpathsLayer = L.layerGroup();
+const roadFootpathsLayer = L.layerGroup();
+const sidewalkFixmeLayer = L.layerGroup();
+const sidewalkNoLayer = L.layerGroup();
+const sidewalkSeparateLayer = L.layerGroup();
+
+const overlays = {
+    'footpathsLayer': footpathsLayer,
+    'surfacicFootpathsLayer': surfacicFootpathsLayer,
+    'roadFootpathsLayer': roadFootpathsLayer,
+    'sidewalkSeparateLayer': sidewalkSeparateLayer,
+    'sidewalkNoLayer': sidewalkNoLayer,
+    'sidewalkFixmeLayer': sidewalkFixmeLayer,
+};
+var layerControl = L.control.layers({}, overlays).addTo(map);
+footpathsLayer.addTo(map)
+roadFootpathsLayer.addTo(map)
+
+// --
 
 var ways = {};
 var nodes = {};
@@ -271,28 +291,28 @@ function parseWay(way) {
 
     for (var side of ['right', 'left']) {
         if (hasSidewalk(side, way.tag)) {
-            addLane(polyline, null, side, 'dodgerblue', way, isMajor ? offsetMajor : offsetMinor, isMajor);
+            addLane(polyline, null, side, 'dodgerblue', way, isMajor ? offsetMajor : offsetMinor, isMajor, roadFootpathsLayer);
             emptyway = false;
         }
     }
     if (isSurfacicSidewalk(way.tag)) {
-        addLane(polyline, null, 'middle', 'darkgoldenrod', way, offsetMinor, false);
+        addLane(polyline, null, 'middle', 'darkgoldenrod', way, offsetMinor, false, surfacicFootpathsLayer);
         emptyway = false;
     }
     else if (isDedicatedHighway(way.tag)) {
-        addLane(polyline, null, 'middle', 'limegreen', way, isMajor ? offsetMajor : offsetMinor, isMajor);
+        addLane(polyline, null, 'middle', 'limegreen', way, isMajor ? offsetMajor : offsetMinor, isMajor, footpathsLayer);
         emptyway = false;
     }
     if (editorMode && isSidewalkSeparate(way.tag)) {
-        addLane(polyline, null, 'separate', 'grey', way, isMajor ? offsetMajor : offsetMinor, isMajor);
+        addLane(polyline, null, 'separate', 'grey', way, isMajor ? offsetMajor : offsetMinor, isMajor, sidewalkSeparateLayer);
         emptyway = false;
     }
     if (editorMode && isNoSidewalk(way.tag)) {
-        addLane(polyline, null, 'separate', 'grey', way, isMajor ? offsetMajor : offsetMinor, isMajor);
+        addLane(polyline, null, 'separate', 'grey', way, isMajor ? offsetMajor : offsetMinor, isMajor, sidewalkNoLayer);
         emptyway = false;
     }
     if (editorMode && emptyway && way.tag.filter(x => x.$k == 'highway' && highwayRegex.test(x.$v)).length > 0)
-        addLane(polyline, null, 'empty', 'black', way, 0, isMajor);
+        addLane(polyline, null, 'empty', 'black', way, 0, isMajor, sidewalkFixmeLayer);
 }
 
 function confirmSide(side, tags) {
@@ -357,7 +377,7 @@ function getContent(url, callback) {
     xhr.send();
 }
 
-function addLane(line, conditions, side, color, osm, offset, isMajor) {
+function addLane(line, conditions, side, color, osm, offset, isMajor, layer) {
     var id = side + osm.$id;
 
     var lanes_offsets = {
@@ -377,7 +397,7 @@ function addLane(line, conditions, side, color, osm, offset, isMajor) {
             isMajor: isMajor
         })
         .on('click', showLaneInfo)
-        .addTo(map);
+        .addTo(layer);
 }
 
 function showLaneInfo(e) {
@@ -724,7 +744,10 @@ function set_sidewalk_tag(osm_id, sidewalk_value) {
     };
     var isMajor = wayIsMajor(osm.tag);
     //add new lane display
-    addLane(polyline, null, 'separate', 'grey', osm, isMajor ? offsetMajor : offsetMinor, isMajor);
+    if (sidewalk_value == "no") {
+        var layer = sidewalkNoLayer
+    } else { var layer = sidewalkSeparateLayer }
+    addLane(polyline, null, 'separate', 'grey', osm, isMajor ? offsetMajor : offsetMinor, isMajor, layer);
     //remove display ed lanes
     if (lanes['empty' + osm_id]) {
         lanes['empty' + osm_id].remove();
