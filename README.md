@@ -1,6 +1,8 @@
 # sidewalker
 
-A tool to check the sidewalk in OSM
+![logo](https://raw.githubusercontent.com/Jungle-Bus/resources/master/logo/Logo_Jungle_Bus-Sidewalker.png)
+
+A tool to check the sidewalks in OSM // Un outil pour vérifier les trottoirs et cheminements piétons dans OSM
 
 # Credits
 

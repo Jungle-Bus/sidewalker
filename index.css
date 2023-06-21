@@ -131,3 +131,15 @@ input[type=text] {
     position: relative;
     top: 2px;
 }
+
+.jungle-logo {
+    position: absolute;
+    z-index: 412;
+    bottom: 12px;
+    right: 0;
+    padding: 10px;
+    opacity: 0.95;
+    box-sizing: border-box;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
