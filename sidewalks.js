@@ -76,9 +76,10 @@ const overlays = {
     'sidewalkNoLayer': sidewalkNoLayer,
     'sidewalkFixmeLayer': sidewalkFixmeLayer,
 };
-var layerControl = L.control.layers({}, overlays).addTo(map);
+//var layerControl = L.control.layers({}, overlays).addTo(map);
 footpathsLayer.addTo(map)
 roadFootpathsLayer.addTo(map)
+surfacicFootpathsLayer.addTo(map)
 
 // --
 
@@ -147,16 +148,18 @@ document.getElementById('editorcb').onchange = (chb) => {
     if (chb.currentTarget.checked) {
         auth.authenticate(checkAuth);
         document.getElementById("legend_more").style.display = 'block';
+        sidewalkSeparateLayer.addTo(map);
+        sidewalkNoLayer.addTo(map);
+        sidewalkFixmeLayer.addTo(map);
     }
     else {
         editorMode = false;
         document.getElementById("legend_more").style.display = 'none';
         document.getElementById('editorActive').style.color = 'black';
-        for (var lane in lanes)
-            if (lane.startsWith('empty')) {
-                lanes[lane].remove();
-                delete lanes[lane];
-            }
+        sidewalkSeparateLayer.removeFrom(map);
+        sidewalkNoLayer.removeFrom(map);
+        sidewalkFixmeLayer.removeFrom(map);
+
     }
 
 };
@@ -645,7 +648,7 @@ function addHighwayCheckBox() {
     <label class="toggle">
                     <input class="toggle-checkbox" type="checkbox" id="editorcb">
                     <div class="toggle-switch"></div>
-                    <span id="editorActive" class="toggle-label">Afficher aussi la voirie</span>
+                    <span id="editorActive" class="toggle-label"> Afficher toutes les rues (mode édition)</span>
                 </label>`
     var parent = document.getElementById("home");
     parent.appendChild(div)
