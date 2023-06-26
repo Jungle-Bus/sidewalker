@@ -1,55 +1,187 @@
 {
     "data_format": 1,
-    "data_url": "https://zlant.github.io/bus-lanes/taginfo.json",
+    "data_url": "https://jungle-bus.github.io/Sidewalker/taginfo.json",
     "project": {
-        "name": "Bus lanes viewer",
-        "description": "Bus lanes viewer from OpenStreetMap",
-        "project_url": "https://zlant.github.io/bus-lanes/",
-        "doc_url": "https://github.com/zlant/bus-lanes"
+        "name": "Sidewalker",
+        "description": "Sidewalk and pedestrian path viewer from OpenStreetMap",
+        "project_url": "https://jungle-bus.github.io/sidewalker/",
+        "icon_url": "https://raw.githubusercontent.com/Jungle-Bus/resources/master/logo/Logo_Jungle_Bus-Sidewalker.png",
+        "contact_name": "Noémie Lehuby",
+        "contact_email": "noemie@junglebus.io",
+        "doc_url": "https://github.com/Jungle-Bus/sidewalker"
     },
     "tags": [
-        { "key": "highway", "value": "motorway", "object_types": [ "way" ], "description": "major road" },
-        { "key": "highway", "value": "trunk", "object_types": [ "way" ], "description": "major road" },
-        { "key": "highway", "value": "primary", "object_types": [ "way" ], "description": "major road" },
-        { "key": "highway", "value": "secondary", "object_types": [ "way" ], "description": "major road" },
-        { "key": "highway", "value": "tertiary", "object_types": [ "way" ], "description": "major road" },
-        { "key": "highway", "value": "unclassified", "object_types": [ "way" ], "description": "major road" },
-        { "key": "highway", "value": "residential", "object_types": [ "way" ], "description": "major road" },
-        { "key": "highway", "value": "service", "object_types": [ "way" ], "description": "candidate for bus/psv dedicated road" },
-
-        { "key": "lanes:bus",  "object_types": [ "way" ] },
-        { "key": "lanes:bus", "value": "2", "object_types": [ "way" ] },
-        { "key": "lanes:bus", "value": "3", "object_types": [ "way" ] },
-        { "key": "lanes:bus", "value": "4", "object_types": [ "way" ] },
-        { "key": "lanes:bus", "value": "5", "object_types": [ "way" ] },
-        { "key": "lanes:bus", "value": "6", "object_types": [ "way" ] },
-        { "key": "lanes:bus", "value": "7", "object_types": [ "way" ] },
-        { "key": "lanes:bus", "value": "8", "object_types": [ "way" ] },
-        { "key": "lanes:bus", "value": "9", "object_types": [ "way" ] },
-        { "key": "lanes:bus:forward",  "object_types": [ "way" ] },
-        { "key": "lanes:bus:backward",  "object_types": [ "way" ] },
-
-        { "key": "busway:both", "value": "lane", "object_types": [ "way" ] },
-        { "key": "busway:right", "value": "lane", "object_types": [ "way" ] },
-        { "key": "busway:left", "value": "lane", "object_types": [ "way" ] },
-        { "key": "busway", "value": "lane", "object_types": [ "way" ] },
-        { "key": "busway", "value": "opposite_lane", "object_types": [ "way" ] },
-        { "key": "oneway", "value": "-1", "object_types": [ "way" ], "description": "exclusion to busway=lane on right" },
-        { "key": "oneway", "value": "yes", "object_types": [ "way" ], "description": "exclusion to busway=lane on left" },
-
-        { "key": "lanes:psv",  "object_types": [ "way" ] },
-        { "key": "lanes:psv", "value": "2", "object_types": [ "way" ] },
-        { "key": "lanes:psv", "value": "3", "object_types": [ "way" ] },
-        { "key": "lanes:psv", "value": "4", "object_types": [ "way" ] },
-        { "key": "lanes:psv", "value": "5", "object_types": [ "way" ] },
-        { "key": "lanes:psv", "value": "6", "object_types": [ "way" ] },
-        { "key": "lanes:psv", "value": "7", "object_types": [ "way" ] },
-        { "key": "lanes:psv", "value": "8", "object_types": [ "way" ] },
-        { "key": "lanes:psv", "value": "9", "object_types": [ "way" ] },
-        { "key": "lanes:psv:forward",  "object_types": [ "way" ] },
-        { "key": "lanes:psv:backward",  "object_types": [ "way" ] },
-
-        { "key": "bus", "value": "yes", "object_types": [ "way" ] },
-        { "key": "psv", "value": "yes", "object_types": [ "way" ] }
+        {
+            "key": "highway",
+            "value": "pedestrian",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "highway",
+            "value": "steps",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "highway",
+            "value": "footway",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "highway",
+            "value": "path",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "sidewalk",
+            "value": "no",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "sidewalk",
+            "value": "both",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "sidewalk",
+            "value": "left",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "sidewalk",
+            "value": "right",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "sidewalk",
+            "value": "separate",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "sidewalk:left",
+            "value": "yes",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "sidewalk:right",
+            "value": "yes",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "footway",
+            "value": "sidewalk",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "footway",
+            "value": "crossing",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "footway",
+            "value": "access_aisle",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "footway",
+            "value": "traffic_island",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "indoor",
+            "value": "yes",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "lit",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "surface",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "smoothness",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "width",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "est_width",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "incline",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "incline:across",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "step_count",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "est_step_count",
+            "object_types": [
+                "way"
+            ]
+        },
+        {
+            "key": "tactile_paving",
+            "object_types": [
+                "way"
+            ]
+        }
     ]
 }
