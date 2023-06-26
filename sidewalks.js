@@ -3,7 +3,7 @@ var hash = new L.Hash(map);
 
 
 
-L.tileLayer.grayscale('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+L.tileLayer.grayscale('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '<a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 20,
 }).addTo(map);
