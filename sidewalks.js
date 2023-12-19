@@ -325,10 +325,10 @@ function confirmSide(side, tags) {
 function hasSidewalk(side, tags) {
 
     if (side == 'right' &&
-        tags.find(x => x.$k == 'sidewalk' && x.$v == 'right' || x.$k == 'sidewalk' && x.$v == 'both' || x.$k == 'sidewalk:right' && x.$v == 'yes'))
+        tags.find(x => x.$k == 'sidewalk' && x.$v == 'right' || x.$k == 'sidewalk:both' && x.$v == 'yes' || x.$k == 'sidewalk' && x.$v == 'both' || x.$k == 'sidewalk:right' && x.$v == 'yes'))
         return true;
     else if (side == 'left' &&
-        tags.find(x => x.$k == 'sidewalk' && x.$v == 'left' || x.$k == 'sidewalk' && x.$v == 'both' || x.$k == 'sidewalk:left' && x.$v == 'yes'))
+        tags.find(x => x.$k == 'sidewalk' && x.$v == 'left' || x.$k == 'sidewalk:both' && x.$v == 'yes' || x.$k == 'sidewalk' && x.$v == 'both' || x.$k == 'sidewalk:left' && x.$v == 'yes'))
         return true;
     return false;
 }
@@ -424,7 +424,7 @@ function getQuerySidewalks() {
         var bbox = [bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast()].join(',');
         return editorMode
             ? '[out:xml];(way[highway~"^primary|secondary|tertiary|unclassified|residential|cycleway|service|footway|pedestrian|steps|path"](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;'
-            : '[out:xml];(way["highway"][sidewalk](' + bbox + ');way["highway"]["sidewalk:left"](' + bbox + ');way["highway"]["sidewalk:right"](' + bbox + ');way["highway"~"footway|pedestrian|steps|cycleway|path"](' + bbox + ');)->.a;(.a;.a >;);out meta;';
+            : '[out:xml];(way["highway"][sidewalk](' + bbox + ');way["highway"]["sidewalk:both"](' + bbox + ');way["highway"]["sidewalk:left"](' + bbox + ');way["highway"]["sidewalk:right"](' + bbox + ');way["highway"~"footway|pedestrian|steps|cycleway|path"](' + bbox + ');)->.a;(.a;.a >;);out meta;';
     }
 }
 
@@ -575,6 +575,8 @@ function getLaneInfoPanelContent(osm) {
             var sidewalk_tag = "pas d'info sur les trottoirs de cette rue"
             if (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == 'both')) {
                 var sidewalk_tag = "trottoir des deux côtés"
+            } else if (tags.find(tg => tg.$k == 'sidewalk:both' && tg.$v == 'yes')) {
+                var sidewalk_tag = "trottoir des deux côtés"
             } else if (tags.find(tg => tg.$k == 'sidewalk' && tg.$v == ('right' || 'left'))) {
                 var sidewalk_tag = "trottoir d'un côté uniquement"
             } else if (tags.find(tg => tg.$k == ('sidewalk:left' || 'sidewalk:right') && tg.$v == 'yes')) {
@@ -724,7 +726,7 @@ function set_sidewalk_tag(osm_id, sidewalk_value) {
     } else {
         osm.tag.push({ $k: 'sidewalk', $v: sidewalk_value })
     }
-    //remove sidewalk:left & sidewalk:right tags if any
+    //remove sidewalk:* tags if any
     if (osm.tag.find(tg => tg.$k == 'sidewalk:left')) {
         var index = osm.tag.indexOf(osm.tag.find(tg => tg.$k == 'sidewalk:left'));
         osm.tag.splice(index, 1);
@@ -733,6 +735,10 @@ function set_sidewalk_tag(osm_id, sidewalk_value) {
         var index = osm.tag.indexOf(osm.tag.find(tg => tg.$k == 'sidewalk:right'));
         osm.tag.splice(index, 1);
     }
+    if (osm.tag.find(tg => tg.$k == 'sidewalk:both')) {
+        var index = osm.tag.indexOf(osm.tag.find(tg => tg.$k == 'sidewalk:both'));
+        osm.tag.splice(index, 1);
+    }    
 
     //find the already displayed lanes
     var polyline = [];
