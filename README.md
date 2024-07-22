@@ -4,6 +4,8 @@
 
 A tool to check the sidewalks in OSM // Un outil pour vérifier les trottoirs et cheminements piétons dans OSM
 
+![screenshot](screenshot.png)
+
 # Credits
 
 The code in this repository is under the GPL-3.0 license. 
